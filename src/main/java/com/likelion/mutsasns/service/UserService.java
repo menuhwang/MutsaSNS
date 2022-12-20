@@ -24,7 +24,7 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
 
     public LoginResponse login(LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(UserNotFoundException::new);
+        User user = userRepository.findByUsername(loginRequest.getUserName()).orElseThrow(UserNotFoundException::new);
         return new LoginResponse(jwtProvider.generateToken(user));
     }
 
