@@ -32,11 +32,9 @@ public class User implements UserDetails {
     private String password;
 
     @Enumerated
-    @Builder.Default
     @Column(nullable = false)
     private Role role = Role.USER;
 
-    @Builder.Default
     @Column(nullable = false)
     private boolean enabled = true;
 
