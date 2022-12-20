@@ -5,6 +5,8 @@ import com.likelion.mutsasns.dto.user.JoinRequest;
 import com.likelion.mutsasns.dto.user.JoinResponse;
 import com.likelion.mutsasns.dto.user.LoginRequest;
 import com.likelion.mutsasns.dto.user.LoginResponse;
+import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
+import com.likelion.mutsasns.exception.unauthorized.InvalidPasswordException;
 import com.likelion.mutsasns.repository.UserRepository;
 import com.likelion.mutsasns.security.provider.JwtProvider;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,11 +44,25 @@ class UserServiceTest {
     void login() {
         given(jwtProvider.generateToken(any(User.class))).willReturn(MOCK_TOKEN);
         given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
+        given(passwordEncoder.matches(anyString(), anyString())).willReturn(true);
         LoginResponse loginResponse = userService.login(LOGIN_REQUEST);
 
         assertEquals(MOCK_TOKEN, loginResponse.getJwt());
         verify(jwtProvider).generateToken(any(User.class));
         verify(userRepository).findByUsername(USERNAME);
+    }
+
+    @Test
+    void login_user_not_found() {
+        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
+        assertThrows(UserNotFoundException.class, () -> userService.login(LOGIN_REQUEST));
+    }
+
+    @Test
+    void login_invalid_password() {
+        given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
+        assertThrows(InvalidPasswordException.class, () -> userService.login(LOGIN_REQUEST));
     }
 
     @Test
