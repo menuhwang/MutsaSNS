@@ -5,6 +5,7 @@ import com.likelion.mutsasns.dto.user.JoinRequest;
 import com.likelion.mutsasns.dto.user.JoinResponse;
 import com.likelion.mutsasns.dto.user.LoginRequest;
 import com.likelion.mutsasns.dto.user.LoginResponse;
+import com.likelion.mutsasns.exception.conflict.DuplicateUsernameException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPasswordException;
 import com.likelion.mutsasns.security.config.WebSecurityConfig;
@@ -96,6 +97,18 @@ class UserControllerTest {
             .andExpect(jsonPath("$.resultCode").value("SUCCESS"))
             .andExpect(jsonPath("$.result.userId").value(USER_ID))
             .andExpect(jsonPath("$.result.userName").value(USERNAME));
+
+        verify(userService).join(any(JoinRequest.class));
+    }
+
+    @Test
+    void join_duplicate_username() throws Exception {
+        when(userService.join(any(JoinRequest.class))).thenThrow(new DuplicateUsernameException());
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/join")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(JOIN_REQUEST)))
+                .andExpect(status().isConflict());
 
         verify(userService).join(any(JoinRequest.class));
     }
