@@ -5,6 +5,8 @@ import com.likelion.mutsasns.dto.user.JoinRequest;
 import com.likelion.mutsasns.dto.user.JoinResponse;
 import com.likelion.mutsasns.dto.user.LoginRequest;
 import com.likelion.mutsasns.dto.user.LoginResponse;
+import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
+import com.likelion.mutsasns.exception.unauthorized.InvalidPasswordException;
 import com.likelion.mutsasns.security.config.WebSecurityConfig;
 import com.likelion.mutsasns.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -55,6 +57,30 @@ class UserControllerTest {
                 .content(objectMapper.writeValueAsString(LOGIN_REQUEST)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.jwt").value(MOCK_TOKEN));
+
+        verify(userService).login(any(LoginRequest.class));
+    }
+
+    @Test
+    void login_user_not_found() throws Exception {
+        when(userService.login(any(LoginRequest.class))).thenThrow(new UserNotFoundException());
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(LOGIN_REQUEST)))
+                .andExpect(status().isNotFound());
+
+        verify(userService).login(any(LoginRequest.class));
+    }
+
+    @Test
+    void login_invalid_password() throws Exception {
+        when(userService.login(any(LoginRequest.class))).thenThrow(new InvalidPasswordException());
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(LOGIN_REQUEST)))
+                .andExpect(status().isUnauthorized());
 
         verify(userService).login(any(LoginRequest.class));
     }
