@@ -12,9 +12,6 @@ build:
     - ./gradlew build -x test
   before_script:
     - chmod +x gradlew
-  after_script:
-    - pwd
-    - ls
   artifacts:
     paths:
       - build/libs/*.jar
@@ -28,11 +25,9 @@ package:
   services:
     - docker:dind
   before_script:
-    - pwd
-    - ls
     - docker login registry.gitlab.com -u $GITLAB_USER -p $GITLAB_PW
   script:
-    - docker build -t registry.gitlab.com/$GITLAB_USER/mutsasns . 
-    - docker push registry.gitlab.com/$GITLAB_USER/mutsasns
+    - docker build -t registry.gitlab.com/$GITLAB_USER/$PROJECT_NAME . 
+    - docker push registry.gitlab.com/$GITLAB_USER/$PROJECT_NAME
   after_script:
     - docker logout
