@@ -1,6 +1,8 @@
 package com.likelion.mutsasns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.likelion.mutsasns.dto.user.JoinRequest;
+import com.likelion.mutsasns.dto.user.JoinResponse;
 import com.likelion.mutsasns.dto.user.LoginRequest;
 import com.likelion.mutsasns.dto.user.LoginResponse;
 import com.likelion.mutsasns.security.config.WebSecurityConfig;
@@ -37,10 +39,13 @@ class UserControllerTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final String MOCK_TOKEN = "mockJwtToken";
+    private final Long USER_ID = 1L;
     private final String USERNAME = "tester";
     private final String PASSWORD = "password";
     private final LoginRequest LOGIN_REQUEST = new LoginRequest(USERNAME, PASSWORD);
     private final LoginResponse LOGIN_RESPONSE = new LoginResponse(MOCK_TOKEN);
+    private final JoinRequest JOIN_REQUEST = new JoinRequest(USERNAME, PASSWORD);
+    private final JoinResponse JOIN_RESPONSE = new JoinResponse(USERNAME, USER_ID);
     @Test
     void login() throws Exception {
         when(userService.login(any(LoginRequest.class))).thenReturn(LOGIN_RESPONSE);
@@ -52,5 +57,20 @@ class UserControllerTest {
             .andExpect(jsonPath("$.jwt").value(MOCK_TOKEN));
 
         verify(userService).login(any(LoginRequest.class));
+    }
+
+    @Test
+    void join() throws Exception {
+        when(userService.join(any(JoinRequest.class))).thenReturn(JOIN_RESPONSE);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/join")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(JOIN_REQUEST)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.resultCode").value("SUCCESS"))
+            .andExpect(jsonPath("$.result.userId").value(USER_ID))
+            .andExpect(jsonPath("$.result.userName").value(USERNAME));
+
+        verify(userService).join(any(JoinRequest.class));
     }
 }
