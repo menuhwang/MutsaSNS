@@ -5,6 +5,7 @@ import com.likelion.mutsasns.dto.user.JoinRequest;
 import com.likelion.mutsasns.dto.user.JoinResponse;
 import com.likelion.mutsasns.dto.user.LoginRequest;
 import com.likelion.mutsasns.dto.user.LoginResponse;
+import com.likelion.mutsasns.exception.conflict.DuplicateUsernameException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPasswordException;
 import com.likelion.mutsasns.repository.UserRepository;
@@ -79,5 +80,12 @@ class UserServiceTest {
         verify(userRepository).existsByUsername(USERNAME);
         verify(passwordEncoder).encode(PASSWORD);
         verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void join_duplicate_username() {
+        when(userRepository.existsByUsername(USERNAME)).thenReturn(true);
+
+        assertThrows(DuplicateUsernameException.class, () -> userService.join(JOIN_REQUEST));
     }
 }
