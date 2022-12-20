@@ -1,13 +1,20 @@
 package com.likelion.mutsasns.security.config;
 
+import com.likelion.mutsasns.security.filter.JwtAuthenticationFilter;
+import com.likelion.mutsasns.security.provider.JwtProvider;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class WebSecurityConfig {
+    private final JwtProvider jwtProvider;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf().disable();
@@ -22,6 +29,8 @@ public class WebSecurityConfig {
                         "/webjars/**",
                         "/swagger/**").permitAll() // swagger 시큐리티 제한 해제 설정
                 .anyRequest().authenticated();
+
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
