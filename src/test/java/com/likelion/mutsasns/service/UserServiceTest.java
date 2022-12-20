@@ -1,6 +1,8 @@
 package com.likelion.mutsasns.service;
 
 import com.likelion.mutsasns.domain.user.User;
+import com.likelion.mutsasns.dto.user.JoinRequest;
+import com.likelion.mutsasns.dto.user.JoinResponse;
 import com.likelion.mutsasns.dto.user.LoginRequest;
 import com.likelion.mutsasns.dto.user.LoginResponse;
 import com.likelion.mutsasns.repository.UserRepository;
@@ -54,7 +56,7 @@ class UserServiceTest {
 
         JoinResponse result = userService.join(JOIN_REQUEST);
 
-        assertEquals(USER_ID, result.getId());
+        assertEquals(USER_ID, result.getUserId());
         assertEquals(USERNAME, result.getUserName());
 
         verify(userRepository).existsByUsername(USERNAME);
