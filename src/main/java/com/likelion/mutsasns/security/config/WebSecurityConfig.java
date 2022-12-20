@@ -28,6 +28,7 @@ public class WebSecurityConfig {
                         "/swagger-ui/**",
                         "/webjars/**",
                         "/swagger/**").permitAll() // swagger 시큐리티 제한 해제 설정
+                .antMatchers("/api/v1/users/login", "/api/v1/users/join").permitAll()
                 .anyRequest().authenticated();
 
         http.addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
