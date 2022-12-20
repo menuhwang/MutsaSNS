@@ -31,7 +31,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.USER;
 
@@ -49,12 +49,10 @@ public class User implements UserDetails {
     private LocalDateTime deletedDateTime;
 
     @Builder
-    public User(Long id, String username, String password, Role role, boolean enabled) {
+    public User(Long id, String username, String password) {
         this.id = id;
         this.username = username;
         this.password = password;
-        this.role = role;
-        this.enabled = enabled;
     }
 
     @Override
