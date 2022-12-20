@@ -1,0 +1,33 @@
+stages:
+  - build
+  - dockerbuild-push
+
+build:
+  image: openjdk:11.0-slim
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - ./gradlew clean
+    - ./gradlew build -x test
+  before_script:
+    - chmod +x gradlew
+  artifacts:
+    paths:
+      - build/libs/*.jar
+    expire_in: 8 min
+
+package:
+  image: docker:latest
+  stage: dockerbuild-push
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  services:
+    - docker:dind
+  before_script:
+    - docker login registry.gitlab.com -u $GITLAB_USER -p $GITLAB_PW
+  script:
+    - docker build -t registry.gitlab.com/$GITLAB_USER/$PROJECT_NAME . 
+    - docker push registry.gitlab.com/$GITLAB_USER/$PROJECT_NAME
+  after_script:
+    - docker logout
