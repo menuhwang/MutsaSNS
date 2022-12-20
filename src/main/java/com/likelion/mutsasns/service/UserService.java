@@ -7,6 +7,7 @@ import com.likelion.mutsasns.dto.user.LoginRequest;
 import com.likelion.mutsasns.dto.user.LoginResponse;
 import com.likelion.mutsasns.exception.conflict.DuplicateUsernameException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
+import com.likelion.mutsasns.exception.unauthorized.InvalidPasswordException;
 import com.likelion.mutsasns.repository.UserRepository;
 import com.likelion.mutsasns.security.provider.JwtProvider;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class UserService implements UserDetailsService {
 
     public LoginResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByUsername(loginRequest.getUserName()).orElseThrow(UserNotFoundException::new);
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) throw new InvalidPasswordException();
         return new LoginResponse(jwtProvider.generateToken(user));
     }
 
