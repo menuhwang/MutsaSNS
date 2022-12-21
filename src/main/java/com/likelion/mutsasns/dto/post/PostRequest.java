@@ -17,6 +17,13 @@ public class PostRequest {
         this.body = body;
     }
 
+    public Post toEntity() {
+        return Post.builder()
+                .title(title)
+                .body(body)
+                .build();
+    }
+
     public Post toEntity(User user) {
         return Post.builder()
                 .title(title)

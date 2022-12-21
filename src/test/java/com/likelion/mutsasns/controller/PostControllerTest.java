@@ -5,6 +5,7 @@ import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.dto.post.PostResponse;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
+import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
 import com.likelion.mutsasns.security.provider.JwtProvider;
 import com.likelion.mutsasns.service.PostService;
 import com.likelion.mutsasns.support.annotation.WebMvcTestWithSecurity;
@@ -21,8 +22,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.security.Principal;
 
-import static com.likelion.mutsasns.exception.ErrorCode.INVALID_TOKEN;
-import static com.likelion.mutsasns.exception.ErrorCode.POST_NOT_FOUND;
+import static com.likelion.mutsasns.exception.ErrorCode.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -40,6 +40,7 @@ class PostControllerTest {
     private JwtProvider jwtProvider;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final String BEARER = "Bearer ";
     private final String MOCK_TOKEN = "mockJwtToken";
     private final Long USER_ID = 1L;
     private final String USERNAME = "tester";
@@ -53,11 +54,20 @@ class PostControllerTest {
     private final Long POST_ID = 1L;
     private final String TITLE = "this is title";
     private final String BODY = "this is body";
+    private final String UPDATE_TITLE = "this is update title";
+    private final String UPDATE_BODY = "this is update body";
     private final PostRequest POST_REQUEST = new PostRequest(TITLE, BODY);
+    private final PostRequest UPDATE_REQUEST = new PostRequest(UPDATE_TITLE, UPDATE_BODY);
     private final PostResponse POST_RESPONSE = PostResponse.builder()
             .id(POST_ID)
             .title(TITLE)
             .body(BODY)
+            .userName(USERNAME)
+            .build();
+    private final PostResponse UPDATE_RESPONSE = PostResponse.builder()
+            .id(POST_ID)
+            .title(UPDATE_TITLE)
+            .body(UPDATE_BODY)
             .userName(USERNAME)
             .build();
     @Test
@@ -96,7 +106,7 @@ class PostControllerTest {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(false);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + MOCK_TOKEN)
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(POST_REQUEST)))
                 .andExpect(status().isForbidden())
@@ -117,6 +127,8 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.title").value(TITLE))
                 .andExpect(jsonPath("$.body").value(BODY))
                 .andExpect(jsonPath("$.userName").value(USERNAME));
+
+        verify(postService).findById(POST_ID);
     }
 
     @Test
@@ -128,5 +140,76 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.resultCode").value("ERROR"))
                 .andExpect(jsonPath("$.result.errorCode").value(POST_NOT_FOUND.name()))
                 .andExpect(jsonPath("$.result.message").value(POST_NOT_FOUND.getMessage()));
+
+        verify(postService).findById(POST_ID);
+    }
+
+    @Test
+    void update() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
+        given(postService.update(any(Principal.class), anyLong(), any(PostRequest.class))).willReturn(UPDATE_RESPONSE);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/posts/" + POST_ID)
+                .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(UPDATE_REQUEST)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.resultCode").value("SUCCESS"))
+            .andExpect(jsonPath("$.result.message").value("포스트 수정 완료"))
+            .andExpect(jsonPath("$.result.postId").value(POST_ID));
+
+        verify(jwtProvider).validateToken(MOCK_TOKEN);
+        verify(jwtProvider).getAuthentication(MOCK_TOKEN);
+        verify(postService).update(any(Principal.class), anyLong(), any(PostRequest.class));
+    }
+
+    @Test
+    void update_invalid_token() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(false);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/posts/" + POST_ID)
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(UPDATE_REQUEST)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
+                .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
+
+        verify(jwtProvider).validateToken(MOCK_TOKEN);
+    }
+
+    @Test
+    void update_no_token_header() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/posts/" + POST_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(UPDATE_REQUEST)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
+                .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
+
+        verify(postService, never()).update(any(Principal.class), anyLong(), any(PostRequest.class));
+    }
+
+    @Test
+    void update_user_not_accessible() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
+        given(postService.update(any(Principal.class), anyLong(), any(PostRequest.class))).willThrow(new InvalidPermissionException());
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/posts/" + POST_ID)
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(UPDATE_REQUEST)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.result.errorCode").value(INVALID_PERMISSION.name()))
+                .andExpect(jsonPath("$.result.message").value(INVALID_PERMISSION.getMessage()));
+
+        verify(jwtProvider).validateToken(MOCK_TOKEN);
+        verify(jwtProvider).getAuthentication(MOCK_TOKEN);
+        verify(postService).update(any(Principal.class), anyLong(), any(PostRequest.class));
     }
 }

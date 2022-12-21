@@ -37,11 +37,20 @@ public class Post {
     @Column(nullable = false)
     private LocalDateTime lastModifiedDateTime;
 
+    public Long getUserId() {
+        return this.user.getId();
+    }
+
     @Builder
     public Post(Long id, String title, String body, User user) {
         this.id = id;
         this.title = title;
         this.body = body;
         this.user = user;
+    }
+
+    public void update(Post update) {
+        this.title = update.getTitle();
+        this.body = update.getBody();
     }
 }
