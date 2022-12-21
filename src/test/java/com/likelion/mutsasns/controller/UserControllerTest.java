@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static com.likelion.mutsasns.exception.ErrorCode.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,7 +54,8 @@ class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(LOGIN_REQUEST)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.jwt").value(MOCK_TOKEN));
+            .andExpect(jsonPath("$.resultCode").value("SUCCESS"))
+            .andExpect(jsonPath("$.result.jwt").value(MOCK_TOKEN));
 
         verify(userService).login(any(LoginRequest.class));
     }
@@ -65,7 +67,10 @@ class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(LOGIN_REQUEST)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.result.errorCode").value(USER_NOT_FOUND.name()))
+                .andExpect(jsonPath("$.result.message").value(USER_NOT_FOUND.getMessage()));
 
         verify(userService).login(any(LoginRequest.class));
     }
@@ -77,7 +82,10 @@ class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(LOGIN_REQUEST)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.result.errorCode").value(INVALID_PASSWORD.name()))
+                .andExpect(jsonPath("$.result.message").value(INVALID_PASSWORD.getMessage()));
 
         verify(userService).login(any(LoginRequest.class));
     }
@@ -104,7 +112,10 @@ class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/join")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(JOIN_REQUEST)))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.result.errorCode").value(DUPLICATED_USERNAME.name()))
+                .andExpect(jsonPath("$.result.message").value(DUPLICATED_USERNAME.getMessage()));
 
         verify(userService).join(any(JoinRequest.class));
     }

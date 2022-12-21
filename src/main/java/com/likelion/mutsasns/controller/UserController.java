@@ -21,9 +21,10 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody LoginRequest loginRequest) {
+    public SuccessResponse<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         log.info("로그인 id : {}", loginRequest.getUserName());
-        return userService.login(loginRequest);
+        LoginResponse response = userService.login(loginRequest);
+        return new SuccessResponse<>(response);
     }
 
     @PostMapping("/join")
