@@ -16,6 +16,19 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig {
     private final JwtProvider jwtProvider;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final String[] SWAGGER = {
+            "/v3/api-docs",
+            "/swagger-resources/**",
+            "/swagger-ui/**",
+            "/webjars/**",
+            "/swagger/**"
+    };
+
+    public static final String[] WHITE_LIST = {
+            "/api/v1/hello",
+            "/api/v1/users/login",
+            "/api/v1/users/join"
+    };
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -24,14 +37,8 @@ public class WebSecurityConfig {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.authorizeHttpRequests()
-                .antMatchers(
-                        "/v3/api-docs",
-                        "/swagger-resources/**",
-                        "/swagger-ui/**",
-                        "/webjars/**",
-                        "/swagger/**").permitAll() // swagger 시큐리티 제한 해제 설정
-                .antMatchers("/api/v1/hello").permitAll()
-                .antMatchers("/api/v1/users/login", "/api/v1/users/join").permitAll()
+                .antMatchers(SWAGGER).permitAll() // swagger 시큐리티 제한 해제 설정
+                .antMatchers(WHITE_LIST).permitAll()
                 .anyRequest().authenticated();
 
         http.exceptionHandling().authenticationEntryPoint(customAuthenticationEntryPoint);
