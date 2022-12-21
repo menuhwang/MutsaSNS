@@ -1,5 +1,6 @@
 package com.likelion.mutsasns.security.config;
 
+import com.likelion.mutsasns.security.entrypoint.CustomAuthenticationEntryPoint;
 import com.likelion.mutsasns.security.filter.JwtAuthenticationFilter;
 import com.likelion.mutsasns.security.provider.JwtProvider;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     private final JwtProvider jwtProvider;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -31,6 +33,8 @@ public class WebSecurityConfig {
                 .antMatchers("/api/v1/hello").permitAll()
                 .antMatchers("/api/v1/users/login", "/api/v1/users/join").permitAll()
                 .anyRequest().authenticated();
+
+        http.exceptionHandling().authenticationEntryPoint(customAuthenticationEntryPoint);
 
         http.addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
 
