@@ -4,16 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.dto.post.PostResponse;
-import com.likelion.mutsasns.security.config.WebSecurityConfig;
-import com.likelion.mutsasns.security.entrypoint.CustomAuthenticationEntryPoint;
 import com.likelion.mutsasns.security.provider.JwtProvider;
 import com.likelion.mutsasns.service.PostService;
+import com.likelion.mutsasns.support.annotation.WebMvcTestWithSecurity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -31,9 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(PostController.class)
-@ImportAutoConfiguration(WebSecurityConfig.class)
-@Import(CustomAuthenticationEntryPoint.class)
+@WebMvcTestWithSecurity(controllers = PostController.class)
 @MockBean(JpaMetamodelMappingContext.class)
 class PostControllerTest {
     @Autowired
