@@ -4,6 +4,7 @@ import com.likelion.mutsasns.domain.post.Post;
 import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.dto.post.PostResponse;
+import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.repository.PostRepository;
 import com.likelion.mutsasns.repository.UserRepository;
@@ -21,6 +22,11 @@ public class PostService {
     public PostResponse create(Principal principal, PostRequest postRequest) {
         User user = userRepository.findByUsername(principal.getName()).orElseThrow(UserNotFoundException::new);
         Post post = postRepository.save(postRequest.toEntity(user));
+        return PostResponse.of(post);
+    }
+
+    public PostResponse findById(Long id) {
+        Post post = postRepository.findById(id).orElseThrow(PostNotFoundException::new);
         return PostResponse.of(post);
     }
 }
