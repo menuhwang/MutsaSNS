@@ -1,5 +1,6 @@
 package com.likelion.mutsasns.config;
 
+import com.likelion.mutsasns.support.annotation.Login;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -14,8 +15,6 @@ import springfox.documentation.spring.web.plugins.Docket;
 
 import java.util.Arrays;
 import java.util.List;
-
-import static com.likelion.mutsasns.security.config.WebSecurityConfig.WHITE_LIST;
 
 @Configuration
 @EnableWebMvc
@@ -34,7 +33,7 @@ public class SwaggerConfig {
     private SecurityContext securityContext() {
         return SecurityContext.builder()
                 .securityReferences(defaultAuth())
-                .operationSelector(o -> !o.requestMappingPattern().matches(String.join("|", WHITE_LIST)))
+                .operationSelector(o -> o.findAnnotation(Login.class).isPresent())
                 .build();
     }
 
