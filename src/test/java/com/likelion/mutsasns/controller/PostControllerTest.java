@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.security.Principal;
 
+import static com.likelion.mutsasns.exception.ErrorCode.INVALID_TOKEN;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
@@ -81,7 +82,10 @@ class PostControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(POST_REQUEST)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
+                .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
 
         verify(postService, never()).create(any(Principal.class), any(PostRequest.class));
     }
@@ -94,7 +98,10 @@ class PostControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(POST_REQUEST)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
+                .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
 
         verify(postService, never()).create(any(Principal.class), any(PostRequest.class));
     }
