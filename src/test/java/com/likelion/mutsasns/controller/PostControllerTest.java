@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.dto.post.PostResponse;
+import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.security.provider.JwtProvider;
 import com.likelion.mutsasns.service.PostService;
 import com.likelion.mutsasns.support.annotation.WebMvcTestWithSecurity;
@@ -21,10 +22,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.security.Principal;
 
 import static com.likelion.mutsasns.exception.ErrorCode.INVALID_TOKEN;
+import static com.likelion.mutsasns.exception.ErrorCode.POST_NOT_FOUND;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -104,5 +105,28 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
 
         verify(postService, never()).create(any(Principal.class), any(PostRequest.class));
+    }
+
+    @Test
+    void findById() throws Exception {
+        given(postService.findById(POST_ID)).willReturn(POST_RESPONSE);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/posts/" + POST_ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(POST_ID))
+                .andExpect(jsonPath("$.title").value(TITLE))
+                .andExpect(jsonPath("$.body").value(BODY))
+                .andExpect(jsonPath("$.userName").value(USERNAME));
+    }
+
+    @Test
+    void findById_post_not_found() throws Exception {
+        given(postService.findById(POST_ID)).willThrow(new PostNotFoundException());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/posts/" + POST_ID))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.result.errorCode").value(POST_NOT_FOUND.name()))
+                .andExpect(jsonPath("$.result.message").value(POST_NOT_FOUND.getMessage()));
     }
 }

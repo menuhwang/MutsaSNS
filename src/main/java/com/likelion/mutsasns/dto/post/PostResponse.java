@@ -1,5 +1,6 @@
 package com.likelion.mutsasns.dto.post;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.likelion.mutsasns.domain.post.Post;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,7 +13,9 @@ public class PostResponse {
     private String title;
     private String body;
     private String userName;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime lastModifiedAt;
 
     private PostResponse() {

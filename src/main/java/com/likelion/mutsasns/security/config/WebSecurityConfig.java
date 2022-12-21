@@ -5,6 +5,7 @@ import com.likelion.mutsasns.security.filter.JwtAuthenticationFilter;
 import com.likelion.mutsasns.security.provider.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -24,6 +25,10 @@ public class WebSecurityConfig {
             "/swagger/**"
     };
 
+    public static final String[] GET_WHITE_LIST = {
+            "/api/v1/posts/**"
+    };
+
     public static final String[] WHITE_LIST = {
             "/api/v1/hello",
             "/api/v1/users/login",
@@ -39,6 +44,7 @@ public class WebSecurityConfig {
         http.authorizeHttpRequests()
                 .antMatchers(SWAGGER).permitAll() // swagger 시큐리티 제한 해제 설정
                 .antMatchers(WHITE_LIST).permitAll()
+                .antMatchers(HttpMethod.GET, GET_WHITE_LIST).permitAll()
                 .anyRequest().authenticated();
 
         http.exceptionHandling().authenticationEntryPoint(customAuthenticationEntryPoint);
