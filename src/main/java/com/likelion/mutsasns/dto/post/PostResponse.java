@@ -38,4 +38,8 @@ public class PostResponse {
                 .lastModifiedAt(post.getLastModifiedDateTime())
                 .build();
     }
+
+    public PostResponseWrapper toWrapperDTO(String message) {
+        return new PostResponseWrapper(message, this);
+    }
 }
