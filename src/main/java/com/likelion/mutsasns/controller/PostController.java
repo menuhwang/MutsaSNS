@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.security.Principal;
 
@@ -22,7 +23,7 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping("")
-    public SuccessResponse<PostResponseWrapper> create(Principal principal, @RequestBody PostRequest postRequest) {
+    public SuccessResponse<PostResponseWrapper> create(@ApiIgnore Principal principal, @RequestBody PostRequest postRequest) {
         log.info("포스트 작성 title:{}, body:{}", postRequest.getTitle(), postRequest.getBody());
         PostResponse response = postService.create(principal, postRequest);
         return new SuccessResponse<>(response.toWrapperDTO("포스트 등록 완료"));
