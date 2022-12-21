@@ -23,7 +23,7 @@ public class PostController {
 
     @PostMapping("")
     public SuccessResponse<PostResponseWrapper> create(Principal principal, @RequestBody PostRequest postRequest) {
-        log.info("PostRequest title:{}, body:{}", postRequest.getTitle(), postRequest.getBody());
+        log.info("포스트 작성 title:{}, body:{}", postRequest.getTitle(), postRequest.getBody());
         PostResponse response = postService.create(principal, postRequest);
         return new SuccessResponse<>(response.toWrapperDTO("포스트 등록 완료"));
     }
