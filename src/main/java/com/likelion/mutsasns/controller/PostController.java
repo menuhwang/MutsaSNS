@@ -28,9 +28,17 @@ public class PostController {
         return new SuccessResponse<>(response.toWrapperDTO("포스트 등록 완료"));
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public PostResponse findById(@PathVariable Long id) {
         log.info("포스트 상세조회 id:{}", id);
         return postService.findById(id);
+    }
+
+    @Login
+    @PutMapping("/{id}")
+    public SuccessResponse<PostResponseWrapper> update(Principal principal, @PathVariable Long id, @RequestBody PostRequest updateRequest) {
+        log.info("포스트 수정 id:{}, title:{}, body:{}", id, updateRequest.getTitle(), updateRequest.getBody());
+        PostResponse response = postService.update(principal, id, updateRequest);
+        return new SuccessResponse<>(response.toWrapperDTO("포스트 수정 완료"));
     }
 }
