@@ -9,6 +9,7 @@ import com.likelion.mutsasns.exception.conflict.DuplicateUsernameException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPasswordException;
 import com.likelion.mutsasns.security.config.WebSecurityConfig;
+import com.likelion.mutsasns.security.entrypoint.CustomAuthenticationEntryPoint;
 import com.likelion.mutsasns.security.provider.JwtProvider;
 import com.likelion.mutsasns.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(UserController.class)
 @ImportAutoConfiguration(WebSecurityConfig.class)
+@Import(CustomAuthenticationEntryPoint.class)
 @MockBean(JpaMetamodelMappingContext.class)
 class UserControllerTest {
     @Autowired
