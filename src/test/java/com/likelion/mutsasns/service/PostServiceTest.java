@@ -4,6 +4,7 @@ import com.likelion.mutsasns.domain.post.Post;
 import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.dto.post.PostResponse;
+import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.repository.PostRepository;
 import com.likelion.mutsasns.repository.UserRepository;
@@ -62,5 +63,24 @@ class PostServiceTest {
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> postService.create(PRINCIPAL, POST_REQUEST));
+    }
+
+    @Test
+    void findById() {
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(POST));
+
+        PostResponse result = postService.findById(POST_ID);
+
+        assertEquals(POST_ID, result.getId());
+        assertEquals(TITLE, result.getTitle());
+        assertEquals(BODY, result.getBody());
+        assertEquals(USERNAME, result.getUserName());
+    }
+
+    @Test
+    void findById_post_not_found() {
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
+
+        assertThrows(PostNotFoundException.class, () -> postService.findById(POST_ID));
     }
 }
