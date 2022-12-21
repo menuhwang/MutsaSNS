@@ -7,10 +7,7 @@ import com.likelion.mutsasns.dto.post.PostResponseWrapper;
 import com.likelion.mutsasns.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.security.Principal;
@@ -27,5 +24,11 @@ public class PostController {
         log.info("포스트 작성 title:{}, body:{}", postRequest.getTitle(), postRequest.getBody());
         PostResponse response = postService.create(principal, postRequest);
         return new SuccessResponse<>(response.toWrapperDTO("포스트 등록 완료"));
+    }
+
+    @GetMapping("{id}")
+    public PostResponse findById(@PathVariable Long id) {
+        log.info("포스트 상세조회 id:{}", id);
+        return postService.findById(id);
     }
 }
