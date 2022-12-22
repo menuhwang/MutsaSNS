@@ -95,7 +95,7 @@ class PostControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(POST_REQUEST)))
-                .andExpect(status().isForbidden())
+                .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
@@ -111,7 +111,7 @@ class PostControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(POST_REQUEST)))
-                .andExpect(status().isForbidden())
+                .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
@@ -138,7 +138,7 @@ class PostControllerTest {
         given(postService.findById(POST_ID)).willThrow(new PostNotFoundException());
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/posts/" + POST_ID))
-                .andExpect(status().isNotFound())
+                .andExpect(status().is(POST_NOT_FOUND.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(POST_NOT_FOUND.name()))
                 .andExpect(jsonPath("$.result.message").value(POST_NOT_FOUND.getMessage()));
@@ -174,7 +174,7 @@ class PostControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(UPDATE_REQUEST)))
-                .andExpect(status().isForbidden())
+                .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
@@ -187,7 +187,7 @@ class PostControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/posts/" + POST_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(UPDATE_REQUEST)))
-                .andExpect(status().isForbidden())
+                .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
@@ -205,7 +205,7 @@ class PostControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(UPDATE_REQUEST)))
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().is(INVALID_PERMISSION.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_PERMISSION.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_PERMISSION.getMessage()));
@@ -239,7 +239,7 @@ class PostControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + POST_ID)
                         .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
-                .andExpect(status().isForbidden())
+                .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
@@ -251,7 +251,7 @@ class PostControllerTest {
     @Test
     void deleteById_no_token_header() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + POST_ID))
-                .andExpect(status().isForbidden())
+                .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
@@ -267,7 +267,7 @@ class PostControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + POST_ID)
                         .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
-                .andExpect(status().isNotFound())
+                .andExpect(status().is(POST_NOT_FOUND.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(POST_NOT_FOUND.name()))
                 .andExpect(jsonPath("$.result.message").value(POST_NOT_FOUND.getMessage()));
