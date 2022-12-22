@@ -8,6 +8,10 @@ import com.likelion.mutsasns.service.PostService;
 import com.likelion.mutsasns.support.annotation.Login;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -19,6 +23,11 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
+
+    @GetMapping("")
+    public Page<PostResponse> findAll(@PageableDefault(size = 20, sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
+        return postService.findAll(pageable);
+    }
 
     @Login
     @PostMapping("")

@@ -11,6 +11,8 @@ import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
 import com.likelion.mutsasns.repository.PostRepository;
 import com.likelion.mutsasns.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +50,10 @@ public class PostService {
         if (isNotAccessiblePost(post, user)) throw new InvalidPermissionException();
         postRepository.deleteById(id);
         return post.getId();
+    }
+
+    public Page<PostResponse> findAll(Pageable pageable) {
+        return postRepository.findAll(pageable).map(PostResponse::of);
     }
 
     public boolean isNotAccessiblePost(Post post, User user) {
