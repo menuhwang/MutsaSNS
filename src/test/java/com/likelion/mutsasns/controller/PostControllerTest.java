@@ -40,6 +40,8 @@ class PostControllerTest {
     private JwtProvider jwtProvider;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final String SUCCESS = "SUCCESS";
+    private final String ERROR = "ERROR";
     private final String BEARER = "Bearer ";
     private final String MOCK_TOKEN = "mockJwtToken";
     private final Long USER_ID = 1L;
@@ -81,7 +83,7 @@ class PostControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(POST_REQUEST)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value("SUCCESS"))
+            .andExpect(jsonPath("$.resultCode").value(SUCCESS))
             .andExpect(jsonPath("$.result.message").value("포스트 등록 완료"))
             .andExpect(jsonPath("$.result.postId").value(POST_ID));
 
@@ -94,7 +96,7 @@ class PostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(POST_REQUEST)))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
 
@@ -110,7 +112,7 @@ class PostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(POST_REQUEST)))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
 
@@ -137,7 +139,7 @@ class PostControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/posts/" + POST_ID))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(POST_NOT_FOUND.name()))
                 .andExpect(jsonPath("$.result.message").value(POST_NOT_FOUND.getMessage()));
 
@@ -155,7 +157,7 @@ class PostControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(UPDATE_REQUEST)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value("SUCCESS"))
+            .andExpect(jsonPath("$.resultCode").value(SUCCESS))
             .andExpect(jsonPath("$.result.message").value("포스트 수정 완료"))
             .andExpect(jsonPath("$.result.postId").value(POST_ID));
 
@@ -173,7 +175,7 @@ class PostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(UPDATE_REQUEST)))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
 
@@ -186,7 +188,7 @@ class PostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(UPDATE_REQUEST)))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
 
@@ -204,12 +206,92 @@ class PostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(UPDATE_REQUEST)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_PERMISSION.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_PERMISSION.getMessage()));
 
         verify(jwtProvider).validateToken(MOCK_TOKEN);
         verify(jwtProvider).getAuthentication(MOCK_TOKEN);
         verify(postService).update(any(Principal.class), anyLong(), any(PostRequest.class));
+    }
+
+    @Test
+    void deleteById() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
+        given(postService.deleteById(any(Principal.class), anyLong())).willReturn(POST_ID);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + POST_ID)
+                .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value(SUCCESS))
+                .andExpect(jsonPath("$.result.message").value("포스트 삭제 완료"))
+                .andExpect(jsonPath("$.result.postId").value(POST_ID));
+
+        verify(jwtProvider).validateToken(MOCK_TOKEN);
+        verify(jwtProvider).getAuthentication(MOCK_TOKEN);
+        verify(postService).deleteById(any(Principal.class), anyLong());
+    }
+
+    @Test
+    void deleteById_invalid_token() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(false);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + POST_ID)
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
+                .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
+                .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
+
+        verify(jwtProvider).validateToken(MOCK_TOKEN);
+        verify(postService, never()).deleteById(any(Principal.class), anyLong());
+    }
+
+    @Test
+    void deleteById_no_token_header() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + POST_ID))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
+                .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
+                .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
+
+        verify(postService, never()).deleteById(any(Principal.class), anyLong());
+    }
+
+    @Test
+    void deleteById_post_not_found() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
+        given(postService.deleteById(any(Principal.class), anyLong())).willThrow(new PostNotFoundException());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + POST_ID)
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
+                .andExpect(jsonPath("$.result.errorCode").value(POST_NOT_FOUND.name()))
+                .andExpect(jsonPath("$.result.message").value(POST_NOT_FOUND.getMessage()));
+
+        verify(jwtProvider).validateToken(MOCK_TOKEN);
+        verify(jwtProvider).getAuthentication(MOCK_TOKEN);
+        verify(postService).deleteById(any(Principal.class), anyLong());
+    }
+
+    @Test
+    void deleteById_user_not_accessible() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
+        given(postService.deleteById(any(Principal.class), anyLong())).willThrow(new InvalidPermissionException());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + POST_ID)
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().is(INVALID_PERMISSION.getHttpStatus().value()))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
+                .andExpect(jsonPath("$.result.errorCode").value(INVALID_PERMISSION.name()))
+                .andExpect(jsonPath("$.result.message").value(INVALID_PERMISSION.getMessage()));
+
+        verify(jwtProvider).validateToken(MOCK_TOKEN);
+        verify(jwtProvider).getAuthentication(MOCK_TOKEN);
+        verify(postService).deleteById(any(Principal.class), anyLong());
     }
 }

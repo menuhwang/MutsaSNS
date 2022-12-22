@@ -129,4 +129,29 @@ class PostServiceTest {
 
         assertThrows(InvalidPermissionException.class, () -> postService.update(OTHER_PRINCIPAL, POST_ID, UPDATE_REQUEST));
     }
+
+    @Test
+    void deleteById() {
+        given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
+        given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
+
+        Long result = postService.deleteById(PRINCIPAL, POST_ID);
+
+        assertEquals(POST_ID, result);
+    }
+
+    @Test
+    void deleteById_user_not_found() {
+        given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
+        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> postService.deleteById(PRINCIPAL, POST_ID));
+    }
+
+    @Test
+    void deleteById_post_not_found() {
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
+
+        assertThrows(PostNotFoundException.class, () -> postService.deleteById(PRINCIPAL, POST_ID));
+    }
 }
