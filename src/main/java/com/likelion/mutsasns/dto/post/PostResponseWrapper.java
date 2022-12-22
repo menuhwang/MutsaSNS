@@ -14,4 +14,9 @@ public class PostResponseWrapper {
         this.message = message;
         this.postId = postResponse.getId();
     }
+
+    public PostResponseWrapper(String message, Long id) {
+        this.message = message;
+        this.postId = id;
+    }
 }
