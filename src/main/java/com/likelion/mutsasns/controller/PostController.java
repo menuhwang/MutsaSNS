@@ -41,4 +41,12 @@ public class PostController {
         PostResponse response = postService.update(principal, id, updateRequest);
         return new SuccessResponse<>(response.toWrapperDTO("포스트 수정 완료"));
     }
+
+    @Login
+    @DeleteMapping("/{id}")
+    public SuccessResponse<PostResponseWrapper> deleteById(Principal principal, @PathVariable Long id) {
+        log.info("포스트 삭제 id:{}", id);
+        Long deletedId = postService.deleteById(principal, id);
+        return new SuccessResponse<>(new PostResponseWrapper("포스트 삭제 완료", deletedId));
+    }
 }

@@ -42,6 +42,14 @@ public class PostService {
         return PostResponse.of(post);
     }
 
+    public Long deleteById(Principal principal, Long id) {
+        Post post = postRepository.findById(id).orElseThrow(PostNotFoundException::new);
+        User user = userRepository.findByUsername(principal.getName()).orElseThrow(UserNotFoundException::new);
+        if (isNotAccessiblePost(post, user)) throw new InvalidPermissionException();
+        postRepository.deleteById(id);
+        return post.getId();
+    }
+
     public boolean isNotAccessiblePost(Post post, User user) {
         return !post.getUserId().equals(user.getId()) && user.getRole() != Role.ADMIN;
     }
