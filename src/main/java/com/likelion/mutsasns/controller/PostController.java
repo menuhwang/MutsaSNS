@@ -45,7 +45,7 @@ public class PostController {
 
     @Login
     @PutMapping("/{id}")
-    public SuccessResponse<PostResponseWrapper> update(Principal principal, @PathVariable Long id, @RequestBody PostRequest updateRequest) {
+    public SuccessResponse<PostResponseWrapper> update(@ApiIgnore Principal principal, @PathVariable Long id, @RequestBody PostRequest updateRequest) {
         log.info("포스트 수정 id:{}, title:{}, body:{}", id, updateRequest.getTitle(), updateRequest.getBody());
         PostResponse response = postService.update(principal, id, updateRequest);
         return new SuccessResponse<>(response.toWrapperDTO("포스트 수정 완료"));
@@ -53,7 +53,7 @@ public class PostController {
 
     @Login
     @DeleteMapping("/{id}")
-    public SuccessResponse<PostResponseWrapper> deleteById(Principal principal, @PathVariable Long id) {
+    public SuccessResponse<PostResponseWrapper> deleteById(@ApiIgnore Principal principal, @PathVariable Long id) {
         log.info("포스트 삭제 id:{}", id);
         Long deletedId = postService.deleteById(principal, id);
         return new SuccessResponse<>(new PostResponseWrapper("포스트 삭제 완료", deletedId));
