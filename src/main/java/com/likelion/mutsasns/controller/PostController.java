@@ -25,8 +25,9 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping("")
-    public Page<PostResponse> findAll(@PageableDefault(size = 20, sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
-        return postService.findAll(pageable);
+    public SuccessResponse<Page<PostResponse>> findAll(@PageableDefault(size = 20, sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<PostResponse> responses = postService.findAll(pageable);
+        return new SuccessResponse<>(responses);
     }
 
     @Login
