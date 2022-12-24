@@ -3,7 +3,7 @@ package com.likelion.mutsasns.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.post.PostRequest;
-import com.likelion.mutsasns.dto.post.PostResponse;
+import com.likelion.mutsasns.dto.post.PostDetailResponse;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
 import com.likelion.mutsasns.security.provider.JwtProvider;
@@ -60,13 +60,13 @@ class PostControllerTest {
     private final String UPDATE_BODY = "this is update body";
     private final PostRequest POST_REQUEST = new PostRequest(TITLE, BODY);
     private final PostRequest UPDATE_REQUEST = new PostRequest(UPDATE_TITLE, UPDATE_BODY);
-    private final PostResponse POST_RESPONSE = PostResponse.builder()
+    private final PostDetailResponse POST_RESPONSE = PostDetailResponse.builder()
             .id(POST_ID)
             .title(TITLE)
             .body(BODY)
             .userName(USERNAME)
             .build();
-    private final PostResponse UPDATE_RESPONSE = PostResponse.builder()
+    private final PostDetailResponse UPDATE_RESPONSE = PostDetailResponse.builder()
             .id(POST_ID)
             .title(UPDATE_TITLE)
             .body(UPDATE_BODY)
@@ -76,7 +76,7 @@ class PostControllerTest {
     void create() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
-        given(postService.create(any(Principal.class), any(PostRequest.class))).willReturn(POST_RESPONSE);
+        given(postService.create(any(Principal.class), any(PostRequest.class))).willReturn(POST_ID);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + MOCK_TOKEN)
@@ -150,7 +150,7 @@ class PostControllerTest {
     void update() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
-        given(postService.update(any(Principal.class), anyLong(), any(PostRequest.class))).willReturn(UPDATE_RESPONSE);
+        given(postService.update(any(Principal.class), anyLong(), any(PostRequest.class))).willReturn(POST_ID);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/posts/" + POST_ID)
                 .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
