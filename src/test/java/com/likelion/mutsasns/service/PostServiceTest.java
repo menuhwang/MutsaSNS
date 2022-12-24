@@ -3,7 +3,7 @@ package com.likelion.mutsasns.service;
 import com.likelion.mutsasns.domain.post.Post;
 import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.post.PostRequest;
-import com.likelion.mutsasns.dto.post.PostResponse;
+import com.likelion.mutsasns.dto.post.PostDetailResponse;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
@@ -62,12 +62,9 @@ class PostServiceTest {
         given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
         when(postRepository.save(any(Post.class))).thenReturn(POST);
 
-        PostResponse result = postService.create(PRINCIPAL, POST_REQUEST);
+        Long result = postService.create(PRINCIPAL, POST_REQUEST);
 
-        assertEquals(POST_ID, result.getId());
-        assertEquals(USERNAME, result.getUserName());
-        assertEquals(TITLE, result.getTitle());
-        assertEquals(BODY, result.getBody());
+        assertEquals(POST_ID, result);
     }
 
     @Test
@@ -81,7 +78,7 @@ class PostServiceTest {
     void findById() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(POST));
 
-        PostResponse result = postService.findById(POST_ID);
+        PostDetailResponse result = postService.findById(POST_ID);
 
         assertEquals(POST_ID, result.getId());
         assertEquals(TITLE, result.getTitle());
@@ -101,10 +98,9 @@ class PostServiceTest {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
 
-        PostResponse result = postService.update(PRINCIPAL, POST_ID, UPDATE_REQUEST);
+        Long result = postService.update(PRINCIPAL, POST_ID, UPDATE_REQUEST);
 
-        assertEquals(UPDATE_TITLE, result.getTitle());
-        assertEquals(UPDATE_BODY, result.getBody());
+        assertEquals(POST_ID, result);
     }
 
     @Test

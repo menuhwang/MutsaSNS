@@ -4,7 +4,7 @@ import com.likelion.mutsasns.domain.post.Post;
 import com.likelion.mutsasns.domain.user.Role;
 import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.post.PostRequest;
-import com.likelion.mutsasns.dto.post.PostResponse;
+import com.likelion.mutsasns.dto.post.PostDetailResponse;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
@@ -24,24 +24,24 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    public PostResponse create(Principal principal, PostRequest postRequest) {
+    public Long create(Principal principal, PostRequest postRequest) {
         User user = userRepository.findByUsername(principal.getName()).orElseThrow(UserNotFoundException::new);
         Post post = postRepository.save(postRequest.toEntity(user));
-        return PostResponse.of(post);
+        return post.getId();
     }
 
-    public PostResponse findById(Long id) {
+    public PostDetailResponse findById(Long id) {
         Post post = postRepository.findById(id).orElseThrow(PostNotFoundException::new);
-        return PostResponse.of(post);
+        return PostDetailResponse.of(post);
     }
 
     @Transactional
-    public PostResponse update(Principal principal, Long id, PostRequest updateRequest) {
+    public Long update(Principal principal, Long id, PostRequest updateRequest) {
         Post post = postRepository.findById(id).orElseThrow(PostNotFoundException::new);
         User user = userRepository.findByUsername(principal.getName()).orElseThrow(UserNotFoundException::new);
         if (isNotAccessiblePost(post, user)) throw new InvalidPermissionException();
         post.update(updateRequest.toEntity());
-        return PostResponse.of(post);
+        return post.getId();
     }
 
     public Long deleteById(Principal principal, Long id) {
@@ -52,8 +52,8 @@ public class PostService {
         return post.getId();
     }
 
-    public Page<PostResponse> findAll(Pageable pageable) {
-        return postRepository.findAll(pageable).map(PostResponse::of);
+    public Page<PostDetailResponse> findAll(Pageable pageable) {
+        return postRepository.findAll(pageable).map(PostDetailResponse::of);
     }
 
     public boolean isNotAccessiblePost(Post post, User user) {
