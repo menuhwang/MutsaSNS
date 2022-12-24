@@ -8,7 +8,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class PostResponse {
+public class PostDetailResponse {
     private Long id;
     private String title;
     private String body;
@@ -18,11 +18,11 @@ public class PostResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastModifiedAt;
 
-    private PostResponse() {
+    private PostDetailResponse() {
     }
 
     @Builder
-    public PostResponse(Long id, String title, String body, String userName, LocalDateTime createdAt, LocalDateTime lastModifiedAt) {
+    public PostDetailResponse(Long id, String title, String body, String userName, LocalDateTime createdAt, LocalDateTime lastModifiedAt) {
         this.id = id;
         this.title = title;
         this.body = body;
@@ -31,8 +31,8 @@ public class PostResponse {
         this.lastModifiedAt = lastModifiedAt;
     }
 
-    public static PostResponse of(Post post) {
-        return PostResponse.builder()
+    public static PostDetailResponse of(Post post) {
+        return PostDetailResponse.builder()
                 .id(post.getId())
                 .title(post.getTitle())
                 .body(post.getBody())
@@ -40,9 +40,5 @@ public class PostResponse {
                 .createdAt(post.getCreatedDateTime())
                 .lastModifiedAt(post.getLastModifiedDateTime())
                 .build();
-    }
-
-    public PostResponseWrapper toWrapperDTO(String message) {
-        return new PostResponseWrapper(message, this);
     }
 }
