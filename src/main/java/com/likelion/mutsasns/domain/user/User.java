@@ -33,7 +33,7 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role = Role.USER;
+    private Role role = Role.ROLE_USER;
 
     @Column(nullable = false)
     private boolean enabled = true;
@@ -49,10 +49,11 @@ public class User implements UserDetails {
     private LocalDateTime deletedDateTime;
 
     @Builder
-    public User(Long id, String username, String password) {
+    public User(Long id, String username, String password, Role role) {
         this.id = id;
         this.username = username;
         this.password = password;
+        this.role = role == null ? Role.ROLE_USER : role;
     }
 
     @Override
@@ -88,5 +89,10 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    public void updateRole(Role role) {
+        if (role == null) return;
+        this.role = role;
     }
 }

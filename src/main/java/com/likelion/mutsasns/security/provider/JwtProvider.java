@@ -1,5 +1,6 @@
 package com.likelion.mutsasns.security.provider;
 
+import com.likelion.mutsasns.domain.user.Role;
 import com.likelion.mutsasns.domain.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -18,6 +19,7 @@ public class JwtProvider {
     private final long EXPIRATION;
     private final String USERNAME_KEY = "username";
     private final String ID_KEY = "id";
+    private final String ROLE_KEY = "role";
 
     public JwtProvider(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") long expiration) {
         this.SECRET = secret;
@@ -28,6 +30,7 @@ public class JwtProvider {
         Claims claims = Jwts.claims();
         claims.put(ID_KEY, user.getId());
         claims.put(USERNAME_KEY, user.getUsername());
+        claims.put(ROLE_KEY, user.getRole().name());
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -56,10 +59,12 @@ public class JwtProvider {
         Claims claims = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody();
         Long id = Long.parseLong(claims.get(ID_KEY).toString());
         String username = claims.get(USERNAME_KEY).toString();
+        String roleName = claims.get(ROLE_KEY).toString();
 
         User user = User.builder()
                 .id(id)
                 .username(username)
+                .role(Role.of(roleName))
                 .build();
 
         return new UsernamePasswordAuthenticationToken(user, token, user.getAuthorities());

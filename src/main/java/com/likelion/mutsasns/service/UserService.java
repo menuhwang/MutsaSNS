@@ -1,10 +1,9 @@
 package com.likelion.mutsasns.service;
 
+import com.likelion.mutsasns.domain.user.Role;
 import com.likelion.mutsasns.domain.user.User;
-import com.likelion.mutsasns.dto.user.JoinRequest;
-import com.likelion.mutsasns.dto.user.JoinResponse;
-import com.likelion.mutsasns.dto.user.LoginRequest;
-import com.likelion.mutsasns.dto.user.LoginResponse;
+import com.likelion.mutsasns.dto.user.*;
+import com.likelion.mutsasns.exception.badrequest.UpdateUserRoleException;
 import com.likelion.mutsasns.exception.conflict.DuplicateUsernameException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPasswordException;
@@ -40,5 +39,13 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+    }
+
+    public UserDetailResponse updateRole(String adminUsername, Long id, UpdateUserRoleRequest updateUserRoleRequest) {
+        User admin = userRepository.findByUsername(adminUsername).orElseThrow(UserNotFoundException::new);
+        if (id.equals(admin.getId())) throw new UpdateUserRoleException();
+        User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+        user.updateRole(Role.of(updateUserRoleRequest.getRole().toUpperCase()));
+        return UserDetailResponse.of(user);
     }
 }
