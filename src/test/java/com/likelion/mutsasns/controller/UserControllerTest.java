@@ -1,10 +1,9 @@
 package com.likelion.mutsasns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.likelion.mutsasns.dto.user.JoinRequest;
-import com.likelion.mutsasns.dto.user.JoinResponse;
-import com.likelion.mutsasns.dto.user.LoginRequest;
-import com.likelion.mutsasns.dto.user.LoginResponse;
+import com.likelion.mutsasns.domain.user.Role;
+import com.likelion.mutsasns.domain.user.User;
+import com.likelion.mutsasns.dto.user.*;
 import com.likelion.mutsasns.exception.conflict.DuplicateUsernameException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPasswordException;
@@ -15,14 +14,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static com.likelion.mutsasns.exception.ErrorCode.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,15 +42,33 @@ class UserControllerTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String SUCCESS = "SUCCESS";
     private final String ERROR = "ERROR";
+    private final String BEARER = "Bearer ";
 
     private final String MOCK_TOKEN = "mockJwtToken";
     private final Long USER_ID = 1L;
+    private final Long ADMIN_ID = 2L;
     private final String USERNAME = "tester";
+    private final String ADMIN_USERNAME = "admin";
     private final String PASSWORD = "password";
+    private final User USER = User.builder()
+            .id(USER_ID)
+            .username(USERNAME)
+            .password(PASSWORD)
+            .build();
+    private final User ADMIN = User.builder()
+            .id(ADMIN_ID)
+            .username(ADMIN_USERNAME)
+            .password(PASSWORD)
+            .role(Role.ROLE_ADMIN)
+            .build();
+    private final Authentication AUTHENTICATION = new UsernamePasswordAuthenticationToken(USER, MOCK_TOKEN, USER.getAuthorities());
+    private final Authentication ADMIN_AUTHENTICATION = new UsernamePasswordAuthenticationToken(ADMIN, MOCK_TOKEN, ADMIN.getAuthorities());
     private final LoginRequest LOGIN_REQUEST = new LoginRequest(USERNAME, PASSWORD);
     private final LoginResponse LOGIN_RESPONSE = new LoginResponse(MOCK_TOKEN);
     private final JoinRequest JOIN_REQUEST = new JoinRequest(USERNAME, PASSWORD);
     private final JoinResponse JOIN_RESPONSE = new JoinResponse(USERNAME, USER_ID);
+    private final UpdateUserRoleRequest UPDATE_USER_ROLE_REQUEST = new UpdateUserRoleRequest(Role.ROLE_ADMIN);
+    private final UserDetailResponse USER_DETAIL_RESPONSE = new UserDetailResponse(USER_ID, USERNAME, Role.ROLE_ADMIN);
     @Test
     void login() throws Exception {
         when(userService.login(any(LoginRequest.class))).thenReturn(LOGIN_RESPONSE);
@@ -120,5 +141,41 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.result.message").value(DUPLICATED_USERNAME.getMessage()));
 
         verify(userService).join(any(JoinRequest.class));
+    }
+
+    @Test
+    void updateUserRole() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(ADMIN_AUTHENTICATION);
+        when(userService.updateRole(eq(ADMIN_USERNAME), eq(USER_ID), any(UpdateUserRoleRequest.class))).thenReturn(USER_DETAIL_RESPONSE);
+
+        System.out.println(ADMIN_AUTHENTICATION.getAuthorities());
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/" + USER_ID + "/role/change")
+                .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(UPDATE_USER_ROLE_REQUEST)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.resultCode").value(SUCCESS))
+            .andExpect(jsonPath("$.result.userId").value(USER_ID))
+            .andExpect(jsonPath("$.result.role").value(Role.ROLE_ADMIN.name()));
+
+        verify(userService).updateRole(eq(ADMIN_USERNAME), eq(USER_ID), any(UpdateUserRoleRequest.class));
+    }
+
+    @Test
+    void updateUserRole_no_admin() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/" + USER_ID + "/role/change")
+                .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(UPDATE_USER_ROLE_REQUEST)))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.resultCode").value(ERROR))
+            .andExpect(jsonPath("$.result.errorCode").value(INVALID_PERMISSION.name()))
+            .andExpect(jsonPath("$.result.message").value(INVALID_PERMISSION.getMessage()));
+
+        verify(userService, never()).updateRole(anyString(), eq(USER_ID), any(UpdateUserRoleRequest.class));
     }
 }
