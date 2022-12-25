@@ -1,5 +1,6 @@
 package com.likelion.mutsasns.service;
 
+import com.likelion.mutsasns.domain.user.Role;
 import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.user.*;
 import com.likelion.mutsasns.exception.badrequest.UpdateUserRoleException;
@@ -44,7 +45,7 @@ public class UserService implements UserDetailsService {
         User admin = userRepository.findByUsername(adminUsername).orElseThrow(UserNotFoundException::new);
         if (id.equals(admin.getId())) throw new UpdateUserRoleException();
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
-        user.updateRole(updateUserRoleRequest.getRole());
+        user.updateRole(Role.of(updateUserRoleRequest.getRole().toUpperCase()));
         return UserDetailResponse.of(user);
     }
 }
