@@ -8,6 +8,11 @@ public abstract class AbstractBaseException extends RuntimeException {
         this.errorCode = errorCode;
     }
 
+    public AbstractBaseException(ErrorCode errorCode, String message) {
+        super(message);
+        this.errorCode = errorCode;
+    }
+
     public ErrorCode getErrorCode() {
         return errorCode;
     }
