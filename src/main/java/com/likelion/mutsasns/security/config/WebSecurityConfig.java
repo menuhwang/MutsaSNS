@@ -1,5 +1,6 @@
 package com.likelion.mutsasns.security.config;
 
+import com.likelion.mutsasns.security.entrypoint.CustomAccessDeniedEntryPoint;
 import com.likelion.mutsasns.security.entrypoint.CustomAuthenticationEntryPoint;
 import com.likelion.mutsasns.security.filter.JwtAuthenticationFilter;
 import com.likelion.mutsasns.security.provider.JwtProvider;
@@ -17,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig {
     private final JwtProvider jwtProvider;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedEntryPoint customAccessDeniedEntryPoint;
     private final String[] SWAGGER = {
             "/v3/api-docs",
             "/swagger-resources/**",
@@ -35,6 +37,10 @@ public class WebSecurityConfig {
             "/api/v1/users/join"
     };
 
+    public static final String[] ADMIN_ONLY = {
+            "/api/v1/users/*/role/change"
+    };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf().disable();
@@ -47,9 +53,12 @@ public class WebSecurityConfig {
                 .antMatchers(SWAGGER).permitAll() // swagger 시큐리티 제한 해제 설정
                 .antMatchers(WHITE_LIST).permitAll()
                 .antMatchers(HttpMethod.GET, GET_WHITE_LIST).permitAll()
+                .antMatchers(ADMIN_ONLY).hasRole("ADMIN")
                 .anyRequest().authenticated();
 
-        http.exceptionHandling().authenticationEntryPoint(customAuthenticationEntryPoint);
+        http.exceptionHandling().accessDeniedHandler(customAccessDeniedEntryPoint)
+            .and()
+            .exceptionHandling().authenticationEntryPoint(customAuthenticationEntryPoint);
 
         http.addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
 

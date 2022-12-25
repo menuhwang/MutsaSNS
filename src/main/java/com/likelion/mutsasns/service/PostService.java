@@ -57,6 +57,6 @@ public class PostService {
     }
 
     public boolean isNotAccessiblePost(Post post, User user) {
-        return !post.getUserId().equals(user.getId()) && user.getRole() != Role.ADMIN;
+        return !post.getUserId().equals(user.getId()) && user.getRole() != Role.ROLE_ADMIN;
     }
 }
