@@ -67,7 +67,7 @@ class UserControllerTest {
     private final LoginResponse LOGIN_RESPONSE = new LoginResponse(MOCK_TOKEN);
     private final JoinRequest JOIN_REQUEST = new JoinRequest(USERNAME, PASSWORD);
     private final JoinResponse JOIN_RESPONSE = new JoinResponse(USERNAME, USER_ID);
-    private final UpdateUserRoleRequest UPDATE_USER_ROLE_REQUEST = new UpdateUserRoleRequest(Role.ROLE_ADMIN);
+    private final UpdateUserRoleRequest UPDATE_USER_ROLE_REQUEST = new UpdateUserRoleRequest("admin");
     private final UserDetailResponse USER_DETAIL_RESPONSE = new UserDetailResponse(USER_ID, USERNAME, Role.ROLE_ADMIN);
     @Test
     void login() throws Exception {

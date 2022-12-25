@@ -46,7 +46,7 @@ class UserServiceTest {
             .build();
     private final LoginRequest LOGIN_REQUEST = new LoginRequest(USERNAME, PASSWORD);
     private final JoinRequest JOIN_REQUEST = new JoinRequest(USERNAME, PASSWORD);
-    private final UpdateUserRoleRequest UPDATE_USER_ROLE_REQUEST = new UpdateUserRoleRequest(Role.ROLE_ADMIN);
+    private final UpdateUserRoleRequest UPDATE_USER_ROLE_REQUEST = new UpdateUserRoleRequest("admin");
 
     @Test
     void login() {
@@ -104,7 +104,7 @@ class UserServiceTest {
         UserDetailResponse result = userService.updateRole(ADMIN_USERNAME, USER_ID, UPDATE_USER_ROLE_REQUEST);
 
         assertEquals(USER_ID, result.getUserId());
-        assertEquals(UPDATE_USER_ROLE_REQUEST.getRole(), result.getRole());
+        assertEquals(Role.ROLE_ADMIN, result.getRole());
     }
 
     @Test
