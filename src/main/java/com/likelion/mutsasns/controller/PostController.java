@@ -34,7 +34,7 @@ public class PostController {
     @PostMapping("")
     public SuccessResponse<PostResultResponse> create(@ApiIgnore Principal principal, @RequestBody PostRequest postRequest) {
         log.info("포스트 작성 title:{}, body:{}", postRequest.getTitle(), postRequest.getBody());
-        Long createdId = postService.create(principal, postRequest);
+        Long createdId = postService.create(principal.getName(), postRequest);
         return new SuccessResponse<>(new PostResultResponse("포스트 등록 완료", createdId));
     }
 
@@ -48,7 +48,7 @@ public class PostController {
     @PutMapping("/{id}")
     public SuccessResponse<PostResultResponse> update(@ApiIgnore Principal principal, @PathVariable Long id, @RequestBody PostRequest updateRequest) {
         log.info("포스트 수정 id:{}, title:{}, body:{}", id, updateRequest.getTitle(), updateRequest.getBody());
-        Long updatedId = postService.update(principal, id, updateRequest);
+        Long updatedId = postService.update(principal.getName(), id, updateRequest);
         return new SuccessResponse<>(new PostResultResponse("포스트 수정 완료", updatedId));
     }
 
@@ -56,7 +56,7 @@ public class PostController {
     @DeleteMapping("/{id}")
     public SuccessResponse<PostResultResponse> deleteById(@ApiIgnore Principal principal, @PathVariable Long id) {
         log.info("포스트 삭제 id:{}", id);
-        Long deletedId = postService.deleteById(principal, id);
+        Long deletedId = postService.deleteById(principal.getName(), id);
         return new SuccessResponse<>(new PostResultResponse("포스트 삭제 완료", deletedId));
     }
 }
