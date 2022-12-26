@@ -20,7 +20,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.security.Principal;
 
 import static com.likelion.mutsasns.exception.ErrorCode.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -66,17 +65,11 @@ class PostControllerTest {
             .body(BODY)
             .userName(USERNAME)
             .build();
-    private final PostDetailResponse UPDATE_RESPONSE = PostDetailResponse.builder()
-            .id(POST_ID)
-            .title(UPDATE_TITLE)
-            .body(UPDATE_BODY)
-            .userName(USERNAME)
-            .build();
     @Test
     void create() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
-        given(postService.create(any(Principal.class), any(PostRequest.class))).willReturn(POST_ID);
+        given(postService.create(anyString(), any(PostRequest.class))).willReturn(POST_ID);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + MOCK_TOKEN)
@@ -87,7 +80,7 @@ class PostControllerTest {
             .andExpect(jsonPath("$.result.message").value("포스트 등록 완료"))
             .andExpect(jsonPath("$.result.postId").value(POST_ID));
 
-        verify(postService).create(any(Principal.class), any(PostRequest.class));
+        verify(postService).create(anyString(), any(PostRequest.class));
     }
 
     @Test
@@ -100,7 +93,7 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
 
-        verify(postService, never()).create(any(Principal.class), any(PostRequest.class));
+        verify(postService, never()).create(anyString(), any(PostRequest.class));
     }
 
     @Test
@@ -116,7 +109,7 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
 
-        verify(postService, never()).create(any(Principal.class), any(PostRequest.class));
+        verify(postService, never()).create(anyString(), any(PostRequest.class));
     }
 
     @Test
@@ -150,7 +143,7 @@ class PostControllerTest {
     void update() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
-        given(postService.update(any(Principal.class), anyLong(), any(PostRequest.class))).willReturn(POST_ID);
+        given(postService.update(anyString(), anyLong(), any(PostRequest.class))).willReturn(POST_ID);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/posts/" + POST_ID)
                 .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
@@ -163,7 +156,7 @@ class PostControllerTest {
 
         verify(jwtProvider).validateToken(MOCK_TOKEN);
         verify(jwtProvider).getAuthentication(MOCK_TOKEN);
-        verify(postService).update(any(Principal.class), anyLong(), any(PostRequest.class));
+        verify(postService).update(anyString(), anyLong(), any(PostRequest.class));
     }
 
     @Test
@@ -192,14 +185,14 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
 
-        verify(postService, never()).update(any(Principal.class), anyLong(), any(PostRequest.class));
+        verify(postService, never()).update(anyString(), anyLong(), any(PostRequest.class));
     }
 
     @Test
     void update_user_not_accessible() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
-        given(postService.update(any(Principal.class), anyLong(), any(PostRequest.class))).willThrow(new InvalidPermissionException());
+        given(postService.update(anyString(), anyLong(), any(PostRequest.class))).willThrow(new InvalidPermissionException());
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/posts/" + POST_ID)
                         .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
@@ -212,14 +205,14 @@ class PostControllerTest {
 
         verify(jwtProvider).validateToken(MOCK_TOKEN);
         verify(jwtProvider).getAuthentication(MOCK_TOKEN);
-        verify(postService).update(any(Principal.class), anyLong(), any(PostRequest.class));
+        verify(postService).update(anyString(), anyLong(), any(PostRequest.class));
     }
 
     @Test
     void deleteById() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
-        given(postService.deleteById(any(Principal.class), anyLong())).willReturn(POST_ID);
+        given(postService.deleteById(anyString(), anyLong())).willReturn(POST_ID);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + POST_ID)
                 .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
@@ -230,7 +223,7 @@ class PostControllerTest {
 
         verify(jwtProvider).validateToken(MOCK_TOKEN);
         verify(jwtProvider).getAuthentication(MOCK_TOKEN);
-        verify(postService).deleteById(any(Principal.class), anyLong());
+        verify(postService).deleteById(anyString(), anyLong());
     }
 
     @Test
@@ -245,7 +238,7 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
 
         verify(jwtProvider).validateToken(MOCK_TOKEN);
-        verify(postService, never()).deleteById(any(Principal.class), anyLong());
+        verify(postService, never()).deleteById(anyString(), anyLong());
     }
 
     @Test
@@ -256,14 +249,14 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
 
-        verify(postService, never()).deleteById(any(Principal.class), anyLong());
+        verify(postService, never()).deleteById(anyString(), anyLong());
     }
 
     @Test
     void deleteById_post_not_found() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
-        given(postService.deleteById(any(Principal.class), anyLong())).willThrow(new PostNotFoundException());
+        given(postService.deleteById(anyString(), anyLong())).willThrow(new PostNotFoundException());
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + POST_ID)
                         .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
@@ -274,14 +267,14 @@ class PostControllerTest {
 
         verify(jwtProvider).validateToken(MOCK_TOKEN);
         verify(jwtProvider).getAuthentication(MOCK_TOKEN);
-        verify(postService).deleteById(any(Principal.class), anyLong());
+        verify(postService).deleteById(anyString(), anyLong());
     }
 
     @Test
     void deleteById_user_not_accessible() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
-        given(postService.deleteById(any(Principal.class), anyLong())).willThrow(new InvalidPermissionException());
+        given(postService.deleteById(anyString(), anyLong())).willThrow(new InvalidPermissionException());
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + POST_ID)
                         .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
@@ -292,6 +285,6 @@ class PostControllerTest {
 
         verify(jwtProvider).validateToken(MOCK_TOKEN);
         verify(jwtProvider).getAuthentication(MOCK_TOKEN);
-        verify(postService).deleteById(any(Principal.class), anyLong());
+        verify(postService).deleteById(anyString(), anyLong());
     }
 }

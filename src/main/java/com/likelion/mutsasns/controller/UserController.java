@@ -7,6 +7,7 @@ import com.likelion.mutsasns.support.annotation.Login;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.security.Principal;
 
@@ -33,7 +34,7 @@ public class UserController {
 
     @Login
     @PostMapping("/{id}/role/change")
-    public SuccessResponse<UserDetailResponse> updateUserRole(Principal principal, @PathVariable Long id, @RequestBody UpdateUserRoleRequest updateUserRoleRequest) {
+    public SuccessResponse<UserDetailResponse> updateUserRole(@ApiIgnore Principal principal, @PathVariable Long id, @RequestBody UpdateUserRoleRequest updateUserRoleRequest) {
         log.info("유저 권한 변경 userId:{}", id);
         UserDetailResponse response = userService.updateRole(principal.getName(), id, updateUserRoleRequest);
         return new SuccessResponse<>(response);
