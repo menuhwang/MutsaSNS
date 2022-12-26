@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/hello")
 public class HelloController {
-    private final String KEYWORD = "nivea";
+    private final String KEYWORD = "happy_new_year";
     @GetMapping("")
     public String hello() {
         return KEYWORD;
