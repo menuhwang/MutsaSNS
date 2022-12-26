@@ -2,6 +2,7 @@ package com.likelion.mutsasns.security.entrypoint;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.likelion.mutsasns.dto.ErrorResponse;
+import com.likelion.mutsasns.dto.ResultResponse;
 import com.likelion.mutsasns.exception.unauthorized.InvalidTokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
@@ -18,11 +19,11 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        ErrorResponse errorResponse = new ErrorResponse(new InvalidTokenException());
+        ResultResponse<ErrorResponse> resultResponse = ResultResponse.error(new InvalidTokenException());
 
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
-        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+        response.getWriter().write(objectMapper.writeValueAsString(resultResponse));
     }
 }

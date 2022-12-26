@@ -2,6 +2,7 @@ package com.likelion.mutsasns.security.entrypoint;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.likelion.mutsasns.dto.ErrorResponse;
+import com.likelion.mutsasns.dto.ResultResponse;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -18,11 +19,11 @@ public class CustomAccessDeniedEntryPoint implements AccessDeniedHandler {
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        ErrorResponse errorResponse = new ErrorResponse(new InvalidPermissionException());
+        ResultResponse<ErrorResponse> resultResponse = ResultResponse.error(new InvalidPermissionException());
 
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
-        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+        response.getWriter().write(objectMapper.writeValueAsString(resultResponse));
     }
 }

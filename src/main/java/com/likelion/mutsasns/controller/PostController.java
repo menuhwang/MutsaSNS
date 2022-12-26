@@ -1,6 +1,6 @@
 package com.likelion.mutsasns.controller;
 
-import com.likelion.mutsasns.dto.SuccessResponse;
+import com.likelion.mutsasns.dto.ResultResponse;
 import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.dto.post.PostDetailResponse;
 import com.likelion.mutsasns.dto.post.PostResultResponse;
@@ -25,17 +25,17 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping("")
-    public SuccessResponse<Page<PostDetailResponse>> findAll(@PageableDefault(size = 20, sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResultResponse<Page<PostDetailResponse>> findAll(@PageableDefault(size = 20, sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<PostDetailResponse> responses = postService.findAll(pageable);
-        return new SuccessResponse<>(responses);
+        return ResultResponse.success(responses);
     }
 
     @Login
     @PostMapping("")
-    public SuccessResponse<PostResultResponse> create(@ApiIgnore Principal principal, @RequestBody PostRequest postRequest) {
+    public ResultResponse<PostResultResponse> create(@ApiIgnore Principal principal, @RequestBody PostRequest postRequest) {
         log.info("포스트 작성 title:{}, body:{}", postRequest.getTitle(), postRequest.getBody());
         Long createdId = postService.create(principal.getName(), postRequest);
-        return new SuccessResponse<>(new PostResultResponse("포스트 등록 완료", createdId));
+        return ResultResponse.success(new PostResultResponse("포스트 등록 완료", createdId));
     }
 
     @GetMapping("/{id}")
@@ -46,17 +46,17 @@ public class PostController {
 
     @Login
     @PutMapping("/{id}")
-    public SuccessResponse<PostResultResponse> update(@ApiIgnore Principal principal, @PathVariable Long id, @RequestBody PostRequest updateRequest) {
+    public ResultResponse<PostResultResponse> update(@ApiIgnore Principal principal, @PathVariable Long id, @RequestBody PostRequest updateRequest) {
         log.info("포스트 수정 id:{}, title:{}, body:{}", id, updateRequest.getTitle(), updateRequest.getBody());
         Long updatedId = postService.update(principal.getName(), id, updateRequest);
-        return new SuccessResponse<>(new PostResultResponse("포스트 수정 완료", updatedId));
+        return ResultResponse.success(new PostResultResponse("포스트 수정 완료", updatedId));
     }
 
     @Login
     @DeleteMapping("/{id}")
-    public SuccessResponse<PostResultResponse> deleteById(@ApiIgnore Principal principal, @PathVariable Long id) {
+    public ResultResponse<PostResultResponse> deleteById(@ApiIgnore Principal principal, @PathVariable Long id) {
         log.info("포스트 삭제 id:{}", id);
         Long deletedId = postService.deleteById(principal.getName(), id);
-        return new SuccessResponse<>(new PostResultResponse("포스트 삭제 완료", deletedId));
+        return ResultResponse.success(new PostResultResponse("포스트 삭제 완료", deletedId));
     }
 }
