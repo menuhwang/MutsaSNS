@@ -16,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Principal;
 
 @Service
 @RequiredArgsConstructor
@@ -24,8 +23,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    public Long create(Principal principal, PostRequest postRequest) {
-        User user = userRepository.findByUsername(principal.getName()).orElseThrow(UserNotFoundException::new);
+    public Long create(String username, PostRequest postRequest) {
+        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         Post post = postRepository.save(postRequest.toEntity(user));
         return post.getId();
     }
@@ -36,17 +35,17 @@ public class PostService {
     }
 
     @Transactional
-    public Long update(Principal principal, Long id, PostRequest updateRequest) {
+    public Long update(String username, Long id, PostRequest updateRequest) {
         Post post = postRepository.findById(id).orElseThrow(PostNotFoundException::new);
-        User user = userRepository.findByUsername(principal.getName()).orElseThrow(UserNotFoundException::new);
+        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         if (isNotAccessiblePost(post, user)) throw new InvalidPermissionException();
         post.update(updateRequest.toEntity());
         return post.getId();
     }
 
-    public Long deleteById(Principal principal, Long id) {
+    public Long deleteById(String username, Long id) {
         Post post = postRepository.findById(id).orElseThrow(PostNotFoundException::new);
-        User user = userRepository.findByUsername(principal.getName()).orElseThrow(UserNotFoundException::new);
+        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         if (isNotAccessiblePost(post, user)) throw new InvalidPermissionException();
         postRepository.deleteById(id);
         return post.getId();
