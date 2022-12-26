@@ -11,9 +11,7 @@ import com.likelion.mutsasns.repository.PostRepository;
 import com.likelion.mutsasns.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-import java.security.Principal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,8 +39,6 @@ class PostServiceTest {
             .username(OTHER_USERNAME)
             .password(PASSWORD)
             .build();
-    private final Principal PRINCIPAL = new UsernamePasswordAuthenticationToken(USER, null, null);
-    private final Principal OTHER_PRINCIPAL = new UsernamePasswordAuthenticationToken(OTHER_USER, null, null);
     private final Long POST_ID = 1L;
     private final String TITLE = "this is title";
     private final String BODY = "this is body";
@@ -62,7 +58,7 @@ class PostServiceTest {
         given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
         when(postRepository.save(any(Post.class))).thenReturn(POST);
 
-        Long result = postService.create(PRINCIPAL, POST_REQUEST);
+        Long result = postService.create(USERNAME, POST_REQUEST);
 
         assertEquals(POST_ID, result);
     }
@@ -71,7 +67,7 @@ class PostServiceTest {
     void create_user_not_found() {
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> postService.create(PRINCIPAL, POST_REQUEST));
+        assertThrows(UserNotFoundException.class, () -> postService.create(USERNAME, POST_REQUEST));
     }
 
     @Test
@@ -98,7 +94,7 @@ class PostServiceTest {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
 
-        Long result = postService.update(PRINCIPAL, POST_ID, UPDATE_REQUEST);
+        Long result = postService.update(USERNAME, POST_ID, UPDATE_REQUEST);
 
         assertEquals(POST_ID, result);
     }
@@ -107,7 +103,7 @@ class PostServiceTest {
     void update_post_not_found() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
 
-        assertThrows(PostNotFoundException.class, () -> postService.update(PRINCIPAL, POST_ID, UPDATE_REQUEST));
+        assertThrows(PostNotFoundException.class, () -> postService.update(USERNAME, POST_ID, UPDATE_REQUEST));
     }
 
     @Test
@@ -115,7 +111,7 @@ class PostServiceTest {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> postService.update(PRINCIPAL, POST_ID, UPDATE_REQUEST));
+        assertThrows(UserNotFoundException.class, () -> postService.update(USERNAME, POST_ID, UPDATE_REQUEST));
     }
 
     @Test
@@ -123,7 +119,7 @@ class PostServiceTest {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         given(userRepository.findByUsername(OTHER_USERNAME)).willReturn(Optional.of(OTHER_USER));
 
-        assertThrows(InvalidPermissionException.class, () -> postService.update(OTHER_PRINCIPAL, POST_ID, UPDATE_REQUEST));
+        assertThrows(InvalidPermissionException.class, () -> postService.update(OTHER_USERNAME, POST_ID, UPDATE_REQUEST));
     }
 
     @Test
@@ -131,7 +127,7 @@ class PostServiceTest {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
 
-        Long result = postService.deleteById(PRINCIPAL, POST_ID);
+        Long result = postService.deleteById(USERNAME, POST_ID);
 
         assertEquals(POST_ID, result);
     }
@@ -141,13 +137,13 @@ class PostServiceTest {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> postService.deleteById(PRINCIPAL, POST_ID));
+        assertThrows(UserNotFoundException.class, () -> postService.deleteById(USERNAME, POST_ID));
     }
 
     @Test
     void deleteById_post_not_found() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
 
-        assertThrows(PostNotFoundException.class, () -> postService.deleteById(PRINCIPAL, POST_ID));
+        assertThrows(PostNotFoundException.class, () -> postService.deleteById(USERNAME, POST_ID));
     }
 }
