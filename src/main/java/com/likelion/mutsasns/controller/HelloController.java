@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/hello")
 public class HelloController {
     private final String KEYWORD = "황민우";
-    @GetMapping("")
+    @GetMapping(value = "", produces = "text/plain;charset=utf-8")
     public String hello() {
         return KEYWORD;
     }
