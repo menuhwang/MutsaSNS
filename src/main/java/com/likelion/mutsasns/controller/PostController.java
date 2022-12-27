@@ -39,9 +39,9 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public PostDetailResponse findById(@PathVariable Long id) {
+    public ResultResponse<PostDetailResponse> findById(@PathVariable Long id) {
         log.info("포스트 상세조회 id:{}", id);
-        return postService.findById(id);
+        return ResultResponse.success(postService.findById(id));
     }
 
     @Login
