@@ -4,6 +4,7 @@ import com.likelion.mutsasns.domain.post.Post;
 import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.dto.post.PostDetailResponse;
+import com.likelion.mutsasns.exception.AbstractBaseException;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
@@ -15,6 +16,7 @@ import org.mockito.Mockito;
 
 import java.util.Optional;
 
+import static com.likelion.mutsasns.exception.ErrorCode.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -70,7 +72,8 @@ class PostServiceTest {
     void create_user_not_found() {
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> postService.create(USERNAME, POST_REQUEST));
+        AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> postService.create(USERNAME, POST_REQUEST));
+        assertEquals(USER_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
@@ -91,7 +94,8 @@ class PostServiceTest {
     void findById_post_not_found() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
 
-        assertThrows(PostNotFoundException.class, () -> postService.findById(POST_ID));
+        AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> postService.findById(POST_ID));
+        assertEquals(POST_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
@@ -110,7 +114,8 @@ class PostServiceTest {
     void update_post_not_found() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
 
-        assertThrows(PostNotFoundException.class, () -> postService.update(USERNAME, POST_ID, UPDATE_REQUEST));
+        AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> postService.update(USERNAME, POST_ID, UPDATE_REQUEST));
+        assertEquals(POST_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
@@ -119,7 +124,8 @@ class PostServiceTest {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> postService.update(USERNAME, POST_ID, UPDATE_REQUEST));
+        AbstractBaseException e  = assertThrows(UserNotFoundException.class, () -> postService.update(USERNAME, POST_ID, UPDATE_REQUEST));
+        assertEquals(USER_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
@@ -128,7 +134,8 @@ class PostServiceTest {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         given(userRepository.findByUsername(OTHER_USERNAME)).willReturn(Optional.of(OTHER_USER));
 
-        assertThrows(InvalidPermissionException.class, () -> postService.update(OTHER_USERNAME, POST_ID, UPDATE_REQUEST));
+        AbstractBaseException e = assertThrows(InvalidPermissionException.class, () -> postService.update(OTHER_USERNAME, POST_ID, UPDATE_REQUEST));
+        assertEquals(INVALID_PERMISSION, e.getErrorCode());
     }
 
     @Test
@@ -148,7 +155,8 @@ class PostServiceTest {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> postService.deleteById(USERNAME, POST_ID));
+        AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> postService.deleteById(USERNAME, POST_ID));
+        assertEquals(USER_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
@@ -156,6 +164,7 @@ class PostServiceTest {
     void deleteById_post_not_found() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
 
-        assertThrows(PostNotFoundException.class, () -> postService.deleteById(USERNAME, POST_ID));
+        AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> postService.deleteById(USERNAME, POST_ID));
+        assertEquals(POST_NOT_FOUND, e.getErrorCode());
     }
 }

@@ -3,6 +3,7 @@ package com.likelion.mutsasns.service;
 import com.likelion.mutsasns.domain.user.Role;
 import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.user.*;
+import com.likelion.mutsasns.exception.AbstractBaseException;
 import com.likelion.mutsasns.exception.badrequest.UpdateUserRoleException;
 import com.likelion.mutsasns.exception.conflict.DuplicateUsernameException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
+import static com.likelion.mutsasns.exception.ErrorCode.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -66,7 +68,8 @@ class UserServiceTest {
     @DisplayName("로그인 : 실패 - 해당 유저 없음")
     void login_user_not_found() {
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
-        assertThrows(UserNotFoundException.class, () -> userService.login(LOGIN_REQUEST));
+        AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> userService.login(LOGIN_REQUEST));
+        assertEquals(USER_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
@@ -74,7 +77,8 @@ class UserServiceTest {
     void login_invalid_password() {
         given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
-        assertThrows(InvalidPasswordException.class, () -> userService.login(LOGIN_REQUEST));
+        AbstractBaseException e = assertThrows(InvalidPasswordException.class, () -> userService.login(LOGIN_REQUEST));
+        assertEquals(INVALID_PASSWORD, e.getErrorCode());
     }
 
     @Test
@@ -99,7 +103,8 @@ class UserServiceTest {
     void join_duplicate_username() {
         when(userRepository.existsByUsername(USERNAME)).thenReturn(true);
 
-        assertThrows(DuplicateUsernameException.class, () -> userService.join(JOIN_REQUEST));
+        AbstractBaseException e = assertThrows(DuplicateUsernameException.class, () -> userService.join(JOIN_REQUEST));
+        assertEquals(DUPLICATED_USERNAME, e.getErrorCode());
     }
 
     @Test
@@ -119,6 +124,7 @@ class UserServiceTest {
     void updateRole_update_user_role_myself() {
         given(userRepository.findByUsername(ADMIN_USERNAME)).willReturn(Optional.of(ADMIN));
 
-        assertThrows(UpdateUserRoleException.class, () -> userService.updateRole(ADMIN_USERNAME, ADMIN_ID, UPDATE_USER_ROLE_REQUEST));
+        AbstractBaseException e = assertThrows(UpdateUserRoleException.class, () -> userService.updateRole(ADMIN_USERNAME, ADMIN_ID, UPDATE_USER_ROLE_REQUEST));
+        assertEquals(INVALID_UPDATE_USER_ROLE, e.getErrorCode());
     }
 }
