@@ -32,7 +32,7 @@ public class WebSecurityConfig {
     };
 
     public static final String[] WHITE_LIST = {
-            "/api/v1/hello",
+            "/api/v1/hello/**",
             "/api/v1/users/login",
             "/api/v1/users/join"
     };
