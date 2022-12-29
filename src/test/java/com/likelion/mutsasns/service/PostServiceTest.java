@@ -9,6 +9,7 @@ import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
 import com.likelion.mutsasns.repository.PostRepository;
 import com.likelion.mutsasns.repository.UserRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -54,6 +55,7 @@ class PostServiceTest {
             .build();
 
     @Test
+    @DisplayName("작성 : 정상")
     void create() {
         given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
         when(postRepository.save(any(Post.class))).thenReturn(POST);
@@ -64,6 +66,7 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("작성 : 실패 - 해당 유저 없음")
     void create_user_not_found() {
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
@@ -71,6 +74,7 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("상세 조회 : 정상")
     void findById() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(POST));
 
@@ -83,6 +87,7 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("상세 조회 : 실패 - 해당 게시글 없음")
     void findById_post_not_found() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
 
@@ -90,6 +95,7 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("수정 : 정상")
     void update() {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
@@ -100,6 +106,7 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("수정 : 실패 - 해당 게시물 없음")
     void update_post_not_found() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
 
@@ -107,6 +114,7 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("수정 : 실패 - 해당 유저 없음")
     void update_user_not_found() {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
@@ -115,6 +123,7 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("수정 : 실패 - 접근 권한 없음")
     void update_user_not_accessible() {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         given(userRepository.findByUsername(OTHER_USERNAME)).willReturn(Optional.of(OTHER_USER));
@@ -123,6 +132,7 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("삭제 : 정상")
     void deleteById() {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
@@ -133,6 +143,7 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("삭제 : 실패 - 해당 유저 없음")
     void deleteById_user_not_found() {
         given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
@@ -141,6 +152,7 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("삭제 : 실패 - 해당 게시물 없음")
     void deleteById_post_not_found() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
 
