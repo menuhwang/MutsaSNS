@@ -118,10 +118,10 @@ class PostControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/posts/" + POST_ID))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(POST_ID))
-                .andExpect(jsonPath("$.title").value(TITLE))
-                .andExpect(jsonPath("$.body").value(BODY))
-                .andExpect(jsonPath("$.userName").value(USERNAME));
+                .andExpect(jsonPath("$.result.id").value(POST_ID))
+                .andExpect(jsonPath("$.result.title").value(TITLE))
+                .andExpect(jsonPath("$.result.body").value(BODY))
+                .andExpect(jsonPath("$.result.userName").value(USERNAME));
 
         verify(postService).findById(POST_ID);
     }
