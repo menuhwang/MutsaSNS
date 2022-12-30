@@ -10,10 +10,10 @@ import com.likelion.mutsasns.exception.unauthorized.InvalidPasswordException;
 import com.likelion.mutsasns.security.provider.JwtProvider;
 import com.likelion.mutsasns.service.UserService;
 import com.likelion.mutsasns.support.annotation.WebMvcTestWithSecurity;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,7 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTestWithSecurity(controllers = UserController.class)
-@MockBean(JpaMetamodelMappingContext.class)
 class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -70,6 +69,7 @@ class UserControllerTest {
     private final UpdateUserRoleRequest UPDATE_USER_ROLE_REQUEST = new UpdateUserRoleRequest("admin");
     private final UserDetailResponse USER_DETAIL_RESPONSE = new UserDetailResponse(USER_ID, USERNAME, Role.ROLE_ADMIN);
     @Test
+    @DisplayName("로그인 : 정상")
     void login() throws Exception {
         when(userService.login(any(LoginRequest.class))).thenReturn(LOGIN_RESPONSE);
 
@@ -84,6 +84,7 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("로그인 : 실패 - 해당 아이디 없음")
     void login_user_not_found() throws Exception {
         when(userService.login(any(LoginRequest.class))).thenThrow(new UserNotFoundException());
 
@@ -99,6 +100,7 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("로그인 : 실패 - 비밀번호 불일치")
     void login_invalid_password() throws Exception {
         when(userService.login(any(LoginRequest.class))).thenThrow(new InvalidPasswordException());
 
@@ -114,6 +116,7 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("회원가입 : 정상")
     void join() throws Exception {
         when(userService.join(any(JoinRequest.class))).thenReturn(JOIN_RESPONSE);
 
@@ -129,6 +132,7 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("회원가입 : 실패 - 아이디 중복")
     void join_duplicate_username() throws Exception {
         when(userService.join(any(JoinRequest.class))).thenThrow(new DuplicateUsernameException());
 
@@ -144,6 +148,7 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("권한 변경 : 정상")
     void updateUserRole() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(ADMIN_AUTHENTICATION);
@@ -163,6 +168,7 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("권한 변경 : 실패 - 권한 없음")
     void updateUserRole_no_admin() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);

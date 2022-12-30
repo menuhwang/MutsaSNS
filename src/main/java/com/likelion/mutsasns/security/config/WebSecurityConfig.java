@@ -17,8 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     private final JwtProvider jwtProvider;
-    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-    private final CustomAccessDeniedEntryPoint customAccessDeniedEntryPoint;
+
     private final String[] SWAGGER = {
             "/v3/api-docs",
             "/swagger-resources/**",
@@ -56,9 +55,9 @@ public class WebSecurityConfig {
                 .antMatchers(ADMIN_ONLY).hasRole("ADMIN")
                 .anyRequest().authenticated();
 
-        http.exceptionHandling().accessDeniedHandler(customAccessDeniedEntryPoint)
+        http.exceptionHandling().accessDeniedHandler(new CustomAccessDeniedEntryPoint())
             .and()
-            .exceptionHandling().authenticationEntryPoint(customAuthenticationEntryPoint);
+            .exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint());
 
         http.addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
 

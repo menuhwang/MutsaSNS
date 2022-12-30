@@ -2,24 +2,23 @@ package com.likelion.mutsasns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.likelion.mutsasns.domain.user.User;
-import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.dto.post.PostDetailResponse;
+import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
 import com.likelion.mutsasns.security.provider.JwtProvider;
 import com.likelion.mutsasns.service.PostService;
 import com.likelion.mutsasns.support.annotation.WebMvcTestWithSecurity;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
 
 import static com.likelion.mutsasns.exception.ErrorCode.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,7 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTestWithSecurity(controllers = PostController.class)
-@MockBean(JpaMetamodelMappingContext.class)
 class PostControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -66,6 +64,7 @@ class PostControllerTest {
             .userName(USERNAME)
             .build();
     @Test
+    @DisplayName("작성 : 정상")
     void create() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
@@ -84,6 +83,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("작성 : 실패 - 로그인하지 않은 경우")
     void create_no_token_header() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -97,6 +97,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("작성 : 실패 - 잘못된 토큰")
     void create_invalid_token() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(false);
 
@@ -113,20 +114,22 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("상세 조회 : 정상")
     void findById() throws Exception {
         given(postService.findById(POST_ID)).willReturn(POST_RESPONSE);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/posts/" + POST_ID))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(POST_ID))
-                .andExpect(jsonPath("$.title").value(TITLE))
-                .andExpect(jsonPath("$.body").value(BODY))
-                .andExpect(jsonPath("$.userName").value(USERNAME));
+                .andExpect(jsonPath("$.result.id").value(POST_ID))
+                .andExpect(jsonPath("$.result.title").value(TITLE))
+                .andExpect(jsonPath("$.result.body").value(BODY))
+                .andExpect(jsonPath("$.result.userName").value(USERNAME));
 
         verify(postService).findById(POST_ID);
     }
 
     @Test
+    @DisplayName("상세 조회 : 실패 - 해당 게시물 없음")
     void findById_post_not_found() throws Exception {
         given(postService.findById(POST_ID)).willThrow(new PostNotFoundException());
 
@@ -140,6 +143,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("수정 : 정상")
     void update() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
@@ -160,6 +164,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("수정 : 실패 - 잘못된 토큰")
     void update_invalid_token() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(false);
 
@@ -176,6 +181,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("수정 : 실패 - 로그인하지 않은 경우")
     void update_no_token_header() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/posts/" + POST_ID)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -189,6 +195,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("수정 : 실패 - 접근 권한 없음")
     void update_user_not_accessible() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
@@ -209,6 +216,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("삭제 : 정상")
     void deleteById() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
@@ -227,6 +235,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("삭제 : 실패 - 잘못된 토큰")
     void deleteById_invalid_token() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(false);
 
@@ -242,6 +251,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("삭제 : 실패 - 로그인하지 않은 경우")
     void deleteById_no_token_header() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + POST_ID))
                 .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
@@ -253,6 +263,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("삭제 : 실패 - 해당 게시물 없음")
     void deleteById_post_not_found() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
@@ -271,6 +282,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("삭제 : 실패 - 접근 권한 없음")
     void deleteById_user_not_accessible() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
