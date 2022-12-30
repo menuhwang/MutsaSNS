@@ -2,8 +2,8 @@ package com.likelion.mutsasns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.likelion.mutsasns.domain.user.User;
-import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.dto.post.PostDetailResponse;
+import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
 import com.likelion.mutsasns.security.provider.JwtProvider;
@@ -13,14 +13,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
 
 import static com.likelion.mutsasns.exception.ErrorCode.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,7 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTestWithSecurity(controllers = PostController.class)
-@MockBean(JpaMetamodelMappingContext.class)
 class PostControllerTest {
     @Autowired
     private MockMvc mockMvc;
