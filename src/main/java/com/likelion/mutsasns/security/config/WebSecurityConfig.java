@@ -27,13 +27,25 @@ public class WebSecurityConfig {
     };
 
     public static final String[] GET_WHITE_LIST = {
+            "/api/v1/posts/**",
+            "/api/v1/hello/**"
+    };
+
+    public static final String[] POST_WHITE_LIST = {
+            "/api/v1/users/login",
+            "/api/v1/users/join"
+    };
+
+    public static final String[] POST_AUTHENTICATED_LIST = {
+            "/api/v1/posts"
+    };
+
+    public static final String[] PUT_AUTHENTICATED_LIST = {
             "/api/v1/posts/**"
     };
 
-    public static final String[] WHITE_LIST = {
-            "/api/v1/hello/**",
-            "/api/v1/users/login",
-            "/api/v1/users/join"
+    public static final String[] DELETE_AUTHENTICATED_LIST = {
+            "/api/v1/posts/**"
     };
 
     public static final String[] ADMIN_ONLY = {
@@ -50,10 +62,12 @@ public class WebSecurityConfig {
 
         http.authorizeHttpRequests()
                 .antMatchers(SWAGGER).permitAll() // swagger 시큐리티 제한 해제 설정
-                .antMatchers(WHITE_LIST).permitAll()
                 .antMatchers(HttpMethod.GET, GET_WHITE_LIST).permitAll()
-                .antMatchers(ADMIN_ONLY).hasRole("ADMIN")
-                .anyRequest().authenticated();
+                .antMatchers(HttpMethod.POST, POST_WHITE_LIST).permitAll()
+                .antMatchers(HttpMethod.POST, POST_AUTHENTICATED_LIST).authenticated()
+                .antMatchers(HttpMethod.PUT, PUT_AUTHENTICATED_LIST).authenticated()
+                .antMatchers(HttpMethod.DELETE, DELETE_AUTHENTICATED_LIST).authenticated()
+                .antMatchers(ADMIN_ONLY).hasRole("ADMIN");
 
         http.exceptionHandling().accessDeniedHandler(new CustomAccessDeniedEntryPoint())
             .and()
