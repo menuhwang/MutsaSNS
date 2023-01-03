@@ -37,7 +37,8 @@ public class WebSecurityConfig {
     };
 
     public static final String[] POST_AUTHENTICATED_LIST = {
-            "/api/v1/posts"
+            "/api/v1/posts",
+            "/api/v1/posts/*/comments"
     };
 
     public static final String[] PUT_AUTHENTICATED_LIST = {
