@@ -18,39 +18,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig {
     private final JwtProvider jwtProvider;
 
-    private final String[] SWAGGER = {
-            "/v3/api-docs",
-            "/swagger-resources/**",
-            "/swagger-ui/**",
-            "/webjars/**",
-            "/swagger/**"
+    public static final String[] POST_AUTHENTICATED_REGEX_LIST = {
+            "^/api/v1/posts$",
+            "^/api/v1/posts/\\d/comments$"
     };
 
-    public static final String[] GET_WHITE_LIST = {
-            "/api/v1/posts/**",
-            "/api/v1/hello/**"
+    public static final String[] PUT_AUTHENTICATED_REGEX_LIST = {
+            "^/api/v1/posts/\\d$"
     };
 
-    public static final String[] POST_WHITE_LIST = {
-            "/api/v1/users/login",
-            "/api/v1/users/join"
+    public static final String[] DELETE_AUTHENTICATED_REGEX_LIST = {
+            "^/api/v1/posts/\\d$"
     };
 
-    public static final String[] POST_AUTHENTICATED_LIST = {
-            "/api/v1/posts",
-            "/api/v1/posts/*/comments"
-    };
-
-    public static final String[] PUT_AUTHENTICATED_LIST = {
-            "/api/v1/posts/**"
-    };
-
-    public static final String[] DELETE_AUTHENTICATED_LIST = {
-            "/api/v1/posts/**"
-    };
-
-    public static final String[] ADMIN_ONLY = {
-            "/api/v1/users/*/role/change"
+    public static final String[] ADMIN_ONLY_REGEX_LIST = {
+            "^/api/v1/users/\\d/role/change$"
     };
 
     @Bean
@@ -62,13 +44,10 @@ public class WebSecurityConfig {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.authorizeHttpRequests()
-                .antMatchers(SWAGGER).permitAll() // swagger 시큐리티 제한 해제 설정
-                .antMatchers(HttpMethod.GET, GET_WHITE_LIST).permitAll()
-                .antMatchers(HttpMethod.POST, POST_WHITE_LIST).permitAll()
-                .antMatchers(HttpMethod.POST, POST_AUTHENTICATED_LIST).authenticated()
-                .antMatchers(HttpMethod.PUT, PUT_AUTHENTICATED_LIST).authenticated()
-                .antMatchers(HttpMethod.DELETE, DELETE_AUTHENTICATED_LIST).authenticated()
-                .antMatchers(ADMIN_ONLY).hasRole("ADMIN");
+                .regexMatchers(HttpMethod.POST, POST_AUTHENTICATED_REGEX_LIST).authenticated()
+                .regexMatchers(HttpMethod.PUT, PUT_AUTHENTICATED_REGEX_LIST).authenticated()
+                .regexMatchers(HttpMethod.DELETE, DELETE_AUTHENTICATED_REGEX_LIST).authenticated()
+                .regexMatchers(ADMIN_ONLY_REGEX_LIST).hasRole("ADMIN");
 
         http.exceptionHandling().accessDeniedHandler(new CustomAccessDeniedEntryPoint())
             .and()
