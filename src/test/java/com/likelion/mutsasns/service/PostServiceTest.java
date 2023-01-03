@@ -17,6 +17,9 @@ import org.mockito.Mockito;
 import java.util.Optional;
 
 import static com.likelion.mutsasns.exception.ErrorCode.*;
+import static com.likelion.mutsasns.support.fixture.PostFixture.POST;
+import static com.likelion.mutsasns.support.fixture.UserFixture.OTHER_USER;
+import static com.likelion.mutsasns.support.fixture.UserFixture.USER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -27,144 +30,154 @@ class PostServiceTest {
     private final UserRepository userRepository = Mockito.mock(UserRepository.class);
     private final PostService postService = new PostService(postRepository, userRepository);
 
-    private final Long USER_ID = 1L;
-    private final Long OTHER_USER_ID = 2L;
-    private final String USERNAME = "tester";
-    private final String OTHER_USERNAME = "other";
-    private final String PASSWORD = "password";
-    private final User USER = User.builder()
-            .id(USER_ID)
-            .username(USERNAME)
-            .password(PASSWORD)
-            .build();
-    private final User OTHER_USER = User.builder()
-            .id(OTHER_USER_ID)
-            .username(OTHER_USERNAME)
-            .password(PASSWORD)
-            .build();
-    private final Long POST_ID = 1L;
-    private final String TITLE = "this is title";
-    private final String BODY = "this is body";
-    private final String UPDATE_TITLE = "this is update title";
-    private final String UPDATE_BODY = "this is update body";
-    private final PostRequest POST_REQUEST = new PostRequest(TITLE, BODY);
-    private final PostRequest UPDATE_REQUEST = new PostRequest(UPDATE_TITLE, UPDATE_BODY);
-    private final Post POST = Post.builder()
-            .id(POST_ID)
-            .title(TITLE)
-            .body(BODY)
-            .user(USER)
-            .build();
-
     @Test
     @DisplayName("작성 : 정상")
     void create() {
-        given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
-        when(postRepository.save(any(Post.class))).thenReturn(POST);
+        final User user = USER.init();
+        final Post post = POST.init(user);
+        final PostRequest postCreateRequest = POST.createRequest();
 
-        Long result = postService.create(USERNAME, POST_REQUEST);
+        given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
+        when(postRepository.save(any(Post.class))).thenReturn(post);
 
-        assertEquals(POST_ID, result);
+        Long result = postService.create(user.getUsername(), postCreateRequest);
+
+        assertEquals(post.getId(), result);
     }
 
     @Test
     @DisplayName("작성 : 실패 - 해당 유저 없음")
     void create_user_not_found() {
-        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
+        final User user = USER.init();
+        final PostRequest postCreateRequest = POST.createRequest();
 
-        AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> postService.create(USERNAME, POST_REQUEST));
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.empty());
+
+        AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> postService.create(user.getUsername(), postCreateRequest));
         assertEquals(USER_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
     @DisplayName("상세 조회 : 정상")
     void findById() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(POST));
+        final User user = USER.init();
+        final Post post = POST.init(user);
 
-        PostDetailResponse result = postService.findById(POST_ID);
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
 
-        assertEquals(POST_ID, result.getId());
-        assertEquals(TITLE, result.getTitle());
-        assertEquals(BODY, result.getBody());
-        assertEquals(USERNAME, result.getUserName());
+        PostDetailResponse result = postService.findById(post.getId());
+
+        assertEquals(post.getId(), result.getId());
+        assertEquals(post.getTitle(), result.getTitle());
+        assertEquals(post.getBody(), result.getBody());
+        assertEquals(post.getUser().getUsername(), result.getUserName());
     }
 
     @Test
     @DisplayName("상세 조회 : 실패 - 해당 게시글 없음")
     void findById_post_not_found() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
+        final User user = USER.init();
+        final Post post = POST.init(user);
 
-        AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> postService.findById(POST_ID));
+        when(postRepository.findById(post.getId())).thenReturn(Optional.empty());
+
+        AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> postService.findById(post.getId()));
         assertEquals(POST_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
     @DisplayName("수정 : 정상")
     void update() {
-        given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
-        given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
+        final User user = USER.init();
+        final Post post = POST.init(user);
+        final PostRequest postUpdateRequest = POST.updateRequest();
 
-        Long result = postService.update(USERNAME, POST_ID, UPDATE_REQUEST);
+        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+        given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
 
-        assertEquals(POST_ID, result);
+        Long result = postService.update(user.getUsername(), post.getId(), postUpdateRequest);
+
+        assertEquals(post.getId(), result);
     }
 
     @Test
     @DisplayName("수정 : 실패 - 해당 게시물 없음")
     void update_post_not_found() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
+        final User user = USER.init();
+        final Post post = POST.init(user);
+        final PostRequest postUpdateRequest = POST.updateRequest();
 
-        AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> postService.update(USERNAME, POST_ID, UPDATE_REQUEST));
+        when(postRepository.findById(post.getId())).thenReturn(Optional.empty());
+
+        AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> postService.update(user.getUsername(), post.getId(), postUpdateRequest));
         assertEquals(POST_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
     @DisplayName("수정 : 실패 - 해당 유저 없음")
     void update_user_not_found() {
-        given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
-        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
+        final User user = USER.init();
+        final Post post = POST.init(user);
+        final PostRequest postUpdateRequest = POST.updateRequest();
 
-        AbstractBaseException e  = assertThrows(UserNotFoundException.class, () -> postService.update(USERNAME, POST_ID, UPDATE_REQUEST));
+        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.empty());
+
+        AbstractBaseException e  = assertThrows(UserNotFoundException.class, () -> postService.update(user.getUsername(), post.getId(), postUpdateRequest));
         assertEquals(USER_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
     @DisplayName("수정 : 실패 - 접근 권한 없음")
     void update_user_not_accessible() {
-        given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
-        given(userRepository.findByUsername(OTHER_USERNAME)).willReturn(Optional.of(OTHER_USER));
+        final User user = USER.init();
+        final User otherUser = OTHER_USER.init();
+        final Post post = POST.init(otherUser);
+        final PostRequest postUpdateRequest = POST.updateRequest();
 
-        AbstractBaseException e = assertThrows(InvalidPermissionException.class, () -> postService.update(OTHER_USERNAME, POST_ID, UPDATE_REQUEST));
+        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+        given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
+
+        AbstractBaseException e = assertThrows(InvalidPermissionException.class, () -> postService.update(user.getUsername(), post.getId(), postUpdateRequest));
         assertEquals(INVALID_PERMISSION, e.getErrorCode());
     }
 
     @Test
     @DisplayName("삭제 : 정상")
     void deleteById() {
-        given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
-        given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
+        final User user = USER.init();
+        final Post post = POST.init(user);
 
-        Long result = postService.deleteById(USERNAME, POST_ID);
+        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+        given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
 
-        assertEquals(POST_ID, result);
+        Long result = postService.deleteById(user.getUsername(), post.getId());
+
+        assertEquals(post.getId(), result);
     }
 
     @Test
     @DisplayName("삭제 : 실패 - 해당 유저 없음")
     void deleteById_user_not_found() {
-        given(postRepository.findById(POST_ID)).willReturn(Optional.of(POST));
-        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
+        final User user = USER.init();
+        final Post post = POST.init(user);
 
-        AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> postService.deleteById(USERNAME, POST_ID));
+        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.empty());
+
+        AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> postService.deleteById(user.getUsername(), post.getId()));
         assertEquals(USER_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
     @DisplayName("삭제 : 실패 - 해당 게시물 없음")
     void deleteById_post_not_found() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
+        final User user = USER.init();
+        final Post post = POST.init(user);
 
-        AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> postService.deleteById(USERNAME, POST_ID));
+        when(postRepository.findById(post.getId())).thenReturn(Optional.empty());
+
+        AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> postService.deleteById(user.getUsername(), post.getId()));
         assertEquals(POST_NOT_FOUND, e.getErrorCode());
     }
 }

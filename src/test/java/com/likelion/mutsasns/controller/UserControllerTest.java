@@ -22,6 +22,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static com.likelion.mutsasns.exception.ErrorCode.*;
+import static com.likelion.mutsasns.support.TestConstant.*;
+import static com.likelion.mutsasns.support.fixture.UserFixture.ADMIN;
+import static com.likelion.mutsasns.support.fixture.UserFixture.USER;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -39,43 +42,18 @@ class UserControllerTest {
     private JwtProvider jwtProvider;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final String SUCCESS = "SUCCESS";
-    private final String ERROR = "ERROR";
-    private final String BEARER = "Bearer ";
 
-    private final String MOCK_TOKEN = "mockJwtToken";
-    private final Long USER_ID = 1L;
-    private final Long ADMIN_ID = 2L;
-    private final String USERNAME = "tester";
-    private final String ADMIN_USERNAME = "admin";
-    private final String PASSWORD = "password";
-    private final User USER = User.builder()
-            .id(USER_ID)
-            .username(USERNAME)
-            .password(PASSWORD)
-            .build();
-    private final User ADMIN = User.builder()
-            .id(ADMIN_ID)
-            .username(ADMIN_USERNAME)
-            .password(PASSWORD)
-            .role(Role.ROLE_ADMIN)
-            .build();
-    private final Authentication AUTHENTICATION = new UsernamePasswordAuthenticationToken(USER, MOCK_TOKEN, USER.getAuthorities());
-    private final Authentication ADMIN_AUTHENTICATION = new UsernamePasswordAuthenticationToken(ADMIN, MOCK_TOKEN, ADMIN.getAuthorities());
-    private final LoginRequest LOGIN_REQUEST = new LoginRequest(USERNAME, PASSWORD);
-    private final LoginResponse LOGIN_RESPONSE = new LoginResponse(MOCK_TOKEN);
-    private final JoinRequest JOIN_REQUEST = new JoinRequest(USERNAME, PASSWORD);
-    private final JoinResponse JOIN_RESPONSE = new JoinResponse(USERNAME, USER_ID);
-    private final UpdateUserRoleRequest UPDATE_USER_ROLE_REQUEST = new UpdateUserRoleRequest("admin");
-    private final UserDetailResponse USER_DETAIL_RESPONSE = new UserDetailResponse(USER_ID, USERNAME, Role.ROLE_ADMIN);
     @Test
     @DisplayName("로그인 : 정상")
     void login() throws Exception {
-        when(userService.login(any(LoginRequest.class))).thenReturn(LOGIN_RESPONSE);
+        final LoginRequest loginRequest = USER.loginRequest();
+        final LoginResponse loginResponse = USER.loginResponse(MOCK_TOKEN);
+
+        when(userService.login(any(LoginRequest.class))).thenReturn(loginResponse);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(LOGIN_REQUEST)))
+                .content(objectMapper.writeValueAsString(loginRequest)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.resultCode").value(SUCCESS))
             .andExpect(jsonPath("$.result.jwt").value(MOCK_TOKEN));
@@ -86,11 +64,13 @@ class UserControllerTest {
     @Test
     @DisplayName("로그인 : 실패 - 해당 아이디 없음")
     void login_user_not_found() throws Exception {
+        final LoginRequest loginRequest = USER.loginRequest();
+
         when(userService.login(any(LoginRequest.class))).thenThrow(new UserNotFoundException());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(LOGIN_REQUEST)))
+                        .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().is(USER_NOT_FOUND.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(USER_NOT_FOUND.name()))
@@ -102,11 +82,13 @@ class UserControllerTest {
     @Test
     @DisplayName("로그인 : 실패 - 비밀번호 불일치")
     void login_invalid_password() throws Exception {
+        final LoginRequest loginRequest = USER.loginRequest();
+
         when(userService.login(any(LoginRequest.class))).thenThrow(new InvalidPasswordException());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(LOGIN_REQUEST)))
+                        .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().is(INVALID_PASSWORD.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_PASSWORD.name()))
@@ -118,15 +100,19 @@ class UserControllerTest {
     @Test
     @DisplayName("회원가입 : 정상")
     void join() throws Exception {
-        when(userService.join(any(JoinRequest.class))).thenReturn(JOIN_RESPONSE);
+        final User user = USER.init();
+        final JoinRequest joinRequest = USER.joinRequest();
+        final JoinResponse joinResponse = USER.joinResponse();
+
+        when(userService.join(any(JoinRequest.class))).thenReturn(joinResponse);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/join")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(JOIN_REQUEST)))
+                .content(objectMapper.writeValueAsString(joinRequest)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.resultCode").value(SUCCESS))
-            .andExpect(jsonPath("$.result.userId").value(USER_ID))
-            .andExpect(jsonPath("$.result.userName").value(USERNAME));
+            .andExpect(jsonPath("$.result.userId").value(user.getId()))
+            .andExpect(jsonPath("$.result.userName").value(user.getUsername()));
 
         verify(userService).join(any(JoinRequest.class));
     }
@@ -134,11 +120,13 @@ class UserControllerTest {
     @Test
     @DisplayName("회원가입 : 실패 - 아이디 중복")
     void join_duplicate_username() throws Exception {
+        final JoinRequest joinRequest = USER.joinRequest();
+
         when(userService.join(any(JoinRequest.class))).thenThrow(new DuplicateUsernameException());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/join")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(JOIN_REQUEST)))
+                        .content(objectMapper.writeValueAsString(joinRequest)))
                 .andExpect(status().is(DUPLICATED_USERNAME.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(DUPLICATED_USERNAME.name()))
@@ -147,41 +135,50 @@ class UserControllerTest {
         verify(userService).join(any(JoinRequest.class));
     }
 
-    @Test
     @DisplayName("권한 변경 : 정상")
+    @Test
     void updateUserRole() throws Exception {
-        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
-        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(ADMIN_AUTHENTICATION);
-        when(userService.updateRole(eq(ADMIN_USERNAME), eq(USER_ID), any(UpdateUserRoleRequest.class))).thenReturn(USER_DETAIL_RESPONSE);
+        final User admin = ADMIN.init();
+        final User user = USER.init();
+        final UpdateUserRoleRequest updateUserRoleRequest = USER.updateRoleRequest(Role.ROLE_ADMIN);
+        final UserDetailResponse updateRoleResponse = USER.userDetailResponse(Role.ROLE_ADMIN);
+        final Authentication adminAuthentication = new UsernamePasswordAuthenticationToken(admin, admin.getPassword(), admin.getAuthorities());
 
-        System.out.println(ADMIN_AUTHENTICATION.getAuthorities());
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/" + USER_ID + "/role/change")
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(adminAuthentication);
+        when(userService.updateRole(eq(admin.getUsername()), eq(user.getId()), any(UpdateUserRoleRequest.class))).thenReturn(updateRoleResponse);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/" + user.getId() + "/role/change")
                 .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(UPDATE_USER_ROLE_REQUEST)))
+                .content(objectMapper.writeValueAsString(updateUserRoleRequest)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.resultCode").value(SUCCESS))
-            .andExpect(jsonPath("$.result.userId").value(USER_ID))
+            .andExpect(jsonPath("$.result.userId").value(user.getId()))
             .andExpect(jsonPath("$.result.role").value(Role.ROLE_ADMIN.name()));
 
-        verify(userService).updateRole(eq(ADMIN_USERNAME), eq(USER_ID), any(UpdateUserRoleRequest.class));
+        verify(userService).updateRole(eq(admin.getUsername()), eq(user.getId()), any(UpdateUserRoleRequest.class));
     }
 
     @Test
     @DisplayName("권한 변경 : 실패 - 권한 없음")
     void updateUserRole_no_admin() throws Exception {
-        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
-        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION);
+        final User user = USER.init();
+        final Authentication authentication = new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+        final UpdateUserRoleRequest updateUserRoleRequest = USER.updateRoleRequest(Role.ROLE_ADMIN);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/" + USER_ID + "/role/change")
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(authentication);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/" + user.getId() + "/role/change")
                 .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(UPDATE_USER_ROLE_REQUEST)))
+                .content(objectMapper.writeValueAsString(updateUserRoleRequest)))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.resultCode").value(ERROR))
             .andExpect(jsonPath("$.result.errorCode").value(INVALID_PERMISSION.name()))
             .andExpect(jsonPath("$.result.message").value(INVALID_PERMISSION.getMessage()));
 
-        verify(userService, never()).updateRole(anyString(), eq(USER_ID), any(UpdateUserRoleRequest.class));
+        verify(userService, never()).updateRole(anyString(), eq(user.getId()), any(UpdateUserRoleRequest.class));
     }
 }
