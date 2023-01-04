@@ -57,4 +57,8 @@ public class Comment {
     public void delete() {
         this.deletedDateTime = LocalDateTime.now();
     }
+
+    public boolean equalPost(Post post) {
+        return this.post.getId().equals(post.getId());
+    }
 }

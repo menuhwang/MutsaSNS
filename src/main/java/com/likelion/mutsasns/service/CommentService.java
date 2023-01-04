@@ -28,26 +28,20 @@ public class CommentService {
     private final PostRepository postRepository;
 
     public CommentDetailResponse create(Long postId, String username, CommentRequest commentRequest) {
-        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
-        Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
+        User user = findUserByUsername(username);
+        Post post = findPostById(postId);
         Comment comment = commentRepository.save(commentRequest.toEntity(post, user));
         return CommentDetailResponse.of(comment);
     }
 
     public Page<CommentDetailResponse> findByPost(Long postId, Pageable pageable) {
-        Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
+        Post post = findPostById(postId);
         return commentRepository.findByPostAndDeletedDateTimeIsNull(post, pageable).map(CommentDetailResponse::of);
     }
 
     @Transactional
     public CommentDetailResponse update(Long postId, Long id, String username, CommentRequest updateRequest) {
-        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
-        Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
-        Comment comment = commentRepository.findById(id).orElseThrow(CommentNotFoundException::new);
-
-        if (!comment.getPostId().equals(postId)) throw new InvalidUpdateCommentException();
-
-        if (isNotAccessibleComment(comment, user)) throw new InvalidPermissionException();
+        Comment comment = findTargetComment(postId, id, username);
 
         comment.update(updateRequest.toEntity());
 
@@ -56,20 +50,43 @@ public class CommentService {
 
     @Transactional
     public Long delete(Long postId, Long id, String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
-        Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
-        Comment comment = commentRepository.findById(id).orElseThrow(CommentNotFoundException::new);
-
-        if (!comment.getPostId().equals(postId)) throw new InvalidUpdateCommentException();
-
-        if (isNotAccessibleComment(comment, user)) throw new InvalidPermissionException();
+        Comment comment = findTargetComment(postId, id, username);
 
         comment.delete();
 
         return comment.getId();
     }
 
-    private boolean isNotAccessibleComment(Comment comment, User user) {
-        return !comment.getUserId().equals(user.getId()) && user.getRole() != Role.ROLE_ADMIN;
+    private void verifyAccessibleComment(Comment comment, User user) {
+        if (!comment.getUserId().equals(user.getId()) && user.getRole() != Role.ROLE_ADMIN)
+            throw new InvalidPermissionException();
+    }
+
+    private User findUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+    }
+
+    private Post findPostById(Long id) {
+        return postRepository.findById(id).orElseThrow(PostNotFoundException::new);
+    }
+
+    private Comment findCommentById(Long id) {
+        return commentRepository.findById(id).orElseThrow(CommentNotFoundException::new);
+    }
+
+    private void validRequest(Comment comment, Post post) {
+        if (!comment.equalPost(post)) throw new InvalidUpdateCommentException();
+    }
+
+    private Comment findTargetComment(Long postId, Long id, String username) {
+        User user = findUserByUsername(username);
+        Post post = findPostById(postId);
+        Comment comment = findCommentById(id);
+
+        validRequest(comment, post);
+
+        verifyAccessibleComment(comment, user);
+
+        return comment;
     }
 }
