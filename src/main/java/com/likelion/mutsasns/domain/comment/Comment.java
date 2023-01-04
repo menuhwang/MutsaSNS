@@ -26,6 +26,7 @@ public class Comment {
     private LocalDateTime createdDateTime;
     @LastModifiedDate
     private LocalDateTime lastModifiedDateTime;
+    private LocalDateTime deletedDateTime;
     @ManyToOne
     private User user;
     @ManyToOne
@@ -51,5 +52,9 @@ public class Comment {
 
     public void update(Comment update) {
         this.comment = update.getComment();
+    }
+
+    public void delete() {
+        this.deletedDateTime = LocalDateTime.now();
     }
 }

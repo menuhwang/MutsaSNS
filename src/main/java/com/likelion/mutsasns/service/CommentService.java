@@ -54,6 +54,21 @@ public class CommentService {
         return CommentDetailResponse.of(comment);
     }
 
+    @Transactional
+    public Long delete(Long postId, Long id, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+        Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
+        Comment comment = commentRepository.findById(id).orElseThrow(CommentNotFoundException::new);
+
+        if (!comment.getPostId().equals(postId)) throw new InvalidUpdateCommentException();
+
+        if (isNotAccessibleComment(comment, user)) throw new InvalidPermissionException();
+
+        comment.delete();
+
+        return comment.getId();
+    }
+
     private boolean isNotAccessibleComment(Comment comment, User user) {
         return !comment.getUserId().equals(user.getId()) && user.getRole() != Role.ROLE_ADMIN;
     }
