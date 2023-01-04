@@ -23,4 +23,10 @@ public class CommentRequest {
                 .user(user)
                 .build();
     }
+
+    public Comment toEntity() {
+        return Comment.builder()
+                .comment(comment)
+                .build();
+    }
 }

@@ -20,4 +20,8 @@ public class ResultResponse<T> {
     public static ResultResponse<ErrorResponse> error(AbstractBaseException e) {
         return new ResultResponse<>("ERROR", ErrorResponse.of(e));
     }
+
+    public static ResultResponse<ErrorResponse> error(ErrorResponse errorResponse) {
+        return new ResultResponse<>("ERROR", errorResponse);
+    }
 }

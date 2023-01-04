@@ -40,4 +40,12 @@ public class Comment {
         this.user = user;
         this.post = post;
     }
+
+    public Long getUserId() {
+        return user.getId();
+    }
+
+    public void update(Comment update) {
+        this.comment = update.getComment();
+    }
 }

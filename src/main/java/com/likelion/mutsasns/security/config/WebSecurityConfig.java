@@ -24,7 +24,8 @@ public class WebSecurityConfig {
     };
 
     public static final String[] PUT_AUTHENTICATED_REGEX_LIST = {
-            "^/api/v1/posts/\\d$"
+            "^/api/v1/posts/\\d$",
+            "^/api/v1/posts/\\d/comments/\\d$"
     };
 
     public static final String[] DELETE_AUTHENTICATED_REGEX_LIST = {

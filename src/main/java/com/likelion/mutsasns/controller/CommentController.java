@@ -31,4 +31,10 @@ public class CommentController {
     public ResultResponse<Page<CommentDetailResponse>> findByPostId(@PathVariable Long postId, @PageableDefault(size = 10, sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResultResponse.success(commentService.findByPost(postId, pageable));
     }
+
+    @Login
+    @PutMapping("/{postId}/comments/{id}")
+    public ResultResponse<CommentDetailResponse> update(@ApiIgnore Principal principal, @PathVariable Long postId, @PathVariable Long id, @RequestBody CommentRequest updateRequest) {
+        return ResultResponse.success(commentService.update(postId, id, principal.getName(), updateRequest));
+    }
 }
