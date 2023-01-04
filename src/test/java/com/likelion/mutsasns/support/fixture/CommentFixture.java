@@ -26,6 +26,15 @@ public enum CommentFixture {
                 .build();
     }
 
+    public Comment init(Long id, User user, Post post) {
+        return Comment.builder()
+                .id(id)
+                .comment(comment)
+                .user(user)
+                .post(post)
+                .build();
+    }
+
     public CommentRequest createRequest() {
         return new CommentRequest(comment);
     }

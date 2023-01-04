@@ -13,10 +13,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.List;
 
 import static com.likelion.mutsasns.exception.ErrorCode.INVALID_TOKEN;
 import static com.likelion.mutsasns.exception.ErrorCode.POST_NOT_FOUND;
@@ -106,5 +112,29 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
                 .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
+    }
+
+    @Test
+    @DisplayName("조회 : 정상")
+    void findByPostId() throws Exception {
+        final User user = USER.init();
+        final Post post = POST.init(user);
+        final Pageable pageable = PageRequest.of(0, 10);
+        final Page<CommentDetailResponse> commentDetailResponsePage = new PageImpl<>(List.of(
+                CommentDetailResponse.of(COMMENT.init(1L, user, post)),
+                CommentDetailResponse.of(COMMENT.init(2L, user, post)),
+                CommentDetailResponse.of(COMMENT.init(3L, user, post))
+        ));
+
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION.init());
+        given(commentService.findByPost(eq(post.getId()), any(Pageable.class))).willReturn(commentDetailResponsePage);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/posts/" + post.getId() + "/comments"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value(SUCCESS))
+                .andExpect(jsonPath("$.result.content").isArray())
+                .andExpect(jsonPath("$.result.pageable").exists())
+                .andExpect(jsonPath("$.result.size").value(3));
     }
 }
