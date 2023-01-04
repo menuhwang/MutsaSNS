@@ -36,7 +36,7 @@ public class CommentService {
 
     public Page<CommentDetailResponse> findByPost(Long postId, Pageable pageable) {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
-        return commentRepository.findByPost(post, pageable).map(CommentDetailResponse::of);
+        return commentRepository.findByPostAndDeletedDateTimeIsNull(post, pageable).map(CommentDetailResponse::of);
     }
 
     @Transactional
