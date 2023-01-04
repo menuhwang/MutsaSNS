@@ -83,7 +83,7 @@ class CommentServiceTest {
     @DisplayName("수정 : 정상")
     void update() {
         final User user = USER.init();
-        final Post post  = POST.init();
+        final Post post = POST.init();
         final Comment comment = COMMENT.init();
         final CommentRequest updateRequest = COMMENT.updateRequest();
 
@@ -164,7 +164,7 @@ class CommentServiceTest {
     @DisplayName("삭제 : 정상")
     void delete() {
         final User user = USER.init();
-        final Post post  = POST.init();
+        final Post post = POST.init();
         final Comment comment = COMMENT.init();
 
         given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));

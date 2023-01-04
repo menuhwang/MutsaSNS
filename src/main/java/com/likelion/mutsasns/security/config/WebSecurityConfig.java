@@ -52,8 +52,8 @@ public class WebSecurityConfig {
                 .regexMatchers(ADMIN_ONLY_REGEX_LIST).hasRole("ADMIN");
 
         http.exceptionHandling().accessDeniedHandler(new CustomAccessDeniedEntryPoint())
-            .and()
-            .exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint());
+                .and()
+                .exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint());
 
         http.addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
 

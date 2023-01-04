@@ -19,8 +19,10 @@ import java.util.Optional;
 
 import static com.likelion.mutsasns.exception.ErrorCode.*;
 import static com.likelion.mutsasns.support.TestConstant.MOCK_TOKEN;
-import static com.likelion.mutsasns.support.fixture.UserFixture.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.likelion.mutsasns.support.fixture.UserFixture.ADMIN;
+import static com.likelion.mutsasns.support.fixture.UserFixture.USER;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;

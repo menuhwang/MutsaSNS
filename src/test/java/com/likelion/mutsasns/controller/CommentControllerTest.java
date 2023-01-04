@@ -27,7 +27,6 @@ import javax.persistence.PersistenceException;
 import java.util.List;
 
 import static com.likelion.mutsasns.exception.ErrorCode.*;
-import static com.likelion.mutsasns.exception.ErrorCode.INVALID_PERMISSION;
 import static com.likelion.mutsasns.support.TestConstant.*;
 import static com.likelion.mutsasns.support.fixture.AuthenticationFixture.AUTHENTICATION;
 import static com.likelion.mutsasns.support.fixture.CommentFixture.COMMENT;
@@ -64,8 +63,8 @@ class CommentControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts/" + post.getId() + "/comments")
                         .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(commentRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultCode").value(SUCCESS))
                 .andExpect(jsonPath("$.result.id").value(commentDetailResponse.getId()))
@@ -150,9 +149,9 @@ class CommentControllerTest {
         given(commentService.update(eq(post.getId()), eq(user.getId()), eq(user.getUsername()), any(CommentRequest.class))).willReturn(CommentDetailResponse.of(update));
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/posts/" + post.getId() + "/comments/" + comment.getId())
-                    .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(updateRequest)))
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultCode").value(SUCCESS))
                 .andExpect(jsonPath("$.result.id").value(comment.getId()))
@@ -249,7 +248,7 @@ class CommentControllerTest {
         given(commentService.delete(eq(post.getId()), eq(user.getId()), eq(user.getUsername()))).willReturn(comment.getId());
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + post.getId() + "/comments/" + comment.getId())
-                    .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultCode").value(SUCCESS))
                 .andExpect(jsonPath("$.result.message").value("댓글 삭제 완료"))

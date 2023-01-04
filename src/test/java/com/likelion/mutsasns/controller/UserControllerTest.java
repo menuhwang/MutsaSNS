@@ -52,11 +52,11 @@ class UserControllerTest {
         when(userService.login(any(LoginRequest.class))).thenReturn(loginResponse);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value(SUCCESS))
-            .andExpect(jsonPath("$.result.jwt").value(MOCK_TOKEN));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value(SUCCESS))
+                .andExpect(jsonPath("$.result.jwt").value(MOCK_TOKEN));
 
         verify(userService).login(any(LoginRequest.class));
     }
@@ -107,12 +107,12 @@ class UserControllerTest {
         when(userService.join(any(JoinRequest.class))).thenReturn(joinResponse);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/join")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(joinRequest)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value(SUCCESS))
-            .andExpect(jsonPath("$.result.userId").value(user.getId()))
-            .andExpect(jsonPath("$.result.userName").value(user.getUsername()));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(joinRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value(SUCCESS))
+                .andExpect(jsonPath("$.result.userId").value(user.getId()))
+                .andExpect(jsonPath("$.result.userName").value(user.getUsername()));
 
         verify(userService).join(any(JoinRequest.class));
     }
@@ -149,13 +149,13 @@ class UserControllerTest {
         when(userService.updateRole(eq(admin.getUsername()), eq(user.getId()), any(UpdateUserRoleRequest.class))).thenReturn(updateRoleResponse);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/" + user.getId() + "/role/change")
-                .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateUserRoleRequest)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value(SUCCESS))
-            .andExpect(jsonPath("$.result.userId").value(user.getId()))
-            .andExpect(jsonPath("$.result.role").value(Role.ROLE_ADMIN.name()));
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateUserRoleRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value(SUCCESS))
+                .andExpect(jsonPath("$.result.userId").value(user.getId()))
+                .andExpect(jsonPath("$.result.role").value(Role.ROLE_ADMIN.name()));
 
         verify(userService).updateRole(eq(admin.getUsername()), eq(user.getId()), any(UpdateUserRoleRequest.class));
     }
@@ -171,13 +171,13 @@ class UserControllerTest {
         given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(authentication);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/" + user.getId() + "/role/change")
-                .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateUserRoleRequest)))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.resultCode").value(ERROR))
-            .andExpect(jsonPath("$.result.errorCode").value(INVALID_PERMISSION.name()))
-            .andExpect(jsonPath("$.result.message").value(INVALID_PERMISSION.getMessage()));
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateUserRoleRequest)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
+                .andExpect(jsonPath("$.result.errorCode").value(INVALID_PERMISSION.name()))
+                .andExpect(jsonPath("$.result.message").value(INVALID_PERMISSION.getMessage()));
 
         verify(userService, never()).updateRole(anyString(), eq(user.getId()), any(UpdateUserRoleRequest.class));
     }

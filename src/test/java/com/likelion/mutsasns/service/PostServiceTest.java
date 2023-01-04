@@ -2,8 +2,8 @@ package com.likelion.mutsasns.service;
 
 import com.likelion.mutsasns.domain.post.Post;
 import com.likelion.mutsasns.domain.user.User;
-import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.dto.post.PostDetailResponse;
+import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.exception.AbstractBaseException;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
@@ -20,7 +20,8 @@ import static com.likelion.mutsasns.exception.ErrorCode.*;
 import static com.likelion.mutsasns.support.fixture.PostFixture.POST;
 import static com.likelion.mutsasns.support.fixture.UserFixture.OTHER_USER;
 import static com.likelion.mutsasns.support.fixture.UserFixture.USER;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
@@ -123,7 +124,7 @@ class PostServiceTest {
         given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
         when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.empty());
 
-        AbstractBaseException e  = assertThrows(UserNotFoundException.class, () -> postService.update(user.getUsername(), post.getId(), postUpdateRequest));
+        AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> postService.update(user.getUsername(), post.getId(), postUpdateRequest));
         assertEquals(USER_NOT_FOUND, e.getErrorCode());
     }
 

@@ -52,13 +52,13 @@ class PostControllerTest {
         given(postService.create(anyString(), any(PostRequest.class))).willReturn(post.getId());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + MOCK_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(POST.createRequest())))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value(SUCCESS))
-            .andExpect(jsonPath("$.result.message").value("포스트 등록 완료"))
-            .andExpect(jsonPath("$.result.postId").value(post.getId()));
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + MOCK_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(POST.createRequest())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value(SUCCESS))
+                .andExpect(jsonPath("$.result.message").value("포스트 등록 완료"))
+                .andExpect(jsonPath("$.result.postId").value(post.getId()));
 
         verify(postService).create(anyString(), any(PostRequest.class));
     }
@@ -134,13 +134,13 @@ class PostControllerTest {
         given(postService.update(anyString(), anyLong(), any(PostRequest.class))).willReturn(1L);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/posts/" + 1)
-                .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(POST.updateRequest())))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value(SUCCESS))
-            .andExpect(jsonPath("$.result.message").value("포스트 수정 완료"))
-            .andExpect(jsonPath("$.result.postId").value(1));
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(POST.updateRequest())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value(SUCCESS))
+                .andExpect(jsonPath("$.result.message").value("포스트 수정 완료"))
+                .andExpect(jsonPath("$.result.postId").value(1));
 
         verify(jwtProvider).validateToken(MOCK_TOKEN);
         verify(jwtProvider).getAuthentication(MOCK_TOKEN);
@@ -210,7 +210,7 @@ class PostControllerTest {
         given(postService.deleteById(anyString(), anyLong())).willReturn(post.getId());
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + post.getId())
-                .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultCode").value(SUCCESS))
                 .andExpect(jsonPath("$.result.message").value("포스트 삭제 완료"))
