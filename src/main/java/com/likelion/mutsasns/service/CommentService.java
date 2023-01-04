@@ -6,6 +6,7 @@ import com.likelion.mutsasns.domain.user.Role;
 import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.comment.CommentDetailResponse;
 import com.likelion.mutsasns.dto.comment.CommentRequest;
+import com.likelion.mutsasns.exception.badrequest.InvalidUpdateCommentException;
 import com.likelion.mutsasns.exception.notfound.CommentNotFoundException;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
@@ -44,6 +45,8 @@ public class CommentService {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
         Comment comment = commentRepository.findById(id).orElseThrow(CommentNotFoundException::new);
 
+        if (!comment.getPostId().equals(postId)) throw new InvalidUpdateCommentException();
+
         if (isNotAccessibleComment(comment, user)) throw new InvalidPermissionException();
 
         comment.update(updateRequest.toEntity());
@@ -52,6 +55,6 @@ public class CommentService {
     }
 
     private boolean isNotAccessibleComment(Comment comment, User user) {
-        return !comment.getUserId().equals(user.getId()) || user.getRole() != Role.ROLE_ADMIN;
+        return !comment.getUserId().equals(user.getId()) && user.getRole() != Role.ROLE_ADMIN;
     }
 }

@@ -45,6 +45,10 @@ public class Comment {
         return user.getId();
     }
 
+    public Long getPostId() {
+        return post.getId();
+    }
+
     public void update(Comment update) {
         this.comment = update.getComment();
     }

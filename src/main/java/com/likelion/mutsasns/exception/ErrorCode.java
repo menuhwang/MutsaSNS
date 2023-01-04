@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
     INVALID_UPDATE_USER_ROLE(HttpStatus.BAD_REQUEST, "잘못된 권한 변경 요청입니다."),
+    INVALID_UPDATE_COMMENT(HttpStatus.BAD_REQUEST, "잘못된 댓글 수정 요청입니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저를 찾을 수 없습니다."),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 포스트가 없습니다."),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 댓글이 없습니다."),
