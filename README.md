@@ -4,11 +4,11 @@
 
 ---
 
-### 1주차 미션 요약
+### 2주차 미션 요약
 
 #### 필수과제
 
-- [ ] 댓글
+- [x] 댓글
 - [ ] 좋아요
 - [ ] 마이피드
 - [ ] 알림
@@ -101,21 +101,22 @@
 
 ## URL
 ### FE
-> http://ec2-43-200-183-93.ap-northeast-2.compute.amazonaws.com
+> ~~http://ec2-43-200-183-93.ap-northeast-2.compute.amazonaws.com~~
 
 ### BE
-> http://ec2-43-200-183-93.ap-northeast-2.compute.amazonaws.com:8080
+> http://api.hmin.site:8080
 
 ### Swagger
-> http://ec2-43-200-183-93.ap-northeast-2.compute.amazonaws.com:8080/swagger-ui/index.html
+> http://api.hmin.site:8080/swagger-ui/index.html
 
 ### 데모 로그인
 
+**User**
 > ID : user1
 >
 > PW : user1234
 
-Admin
+**Admin**
 > ID : admin
 > 
 > PW : qwer1234
@@ -301,7 +302,6 @@ Admin
 {
   "comment" : "String"
 }
-
 ```
 
 **Response Body**
@@ -339,5 +339,43 @@ Admin
     "empty": boolean
   }
 }
+```
 
+#### 댓글 수정
+`PUT /posts/{postId}/comments/{id}`
+
+**Request Body**
+```json
+{
+  "comment" : "String"
+}
+```
+
+**Response Body**
+```json
+{
+  "resultCode": "SUCCESS",
+  "result":{
+    "id": 0,
+    "comment": "String",
+    "userName": "String",
+    "postId": 0,
+    "createdAt": "yyyy-mm-dd hh:mm:ss",
+    "lastModifiedAt": "yyyy-mm-dd hh:mm:ss"
+  }
+}
+```
+
+#### 댓글 삭제
+`DELETE /posts/{postId}/comments/{id}`
+
+**Response Body**
+```json
+{
+  "resultCode": "SUCCESS",
+  "result":{
+    "message": "댓글 삭제 완료",
+    "id": 0
+  }
+}
 ```
