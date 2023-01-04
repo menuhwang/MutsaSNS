@@ -236,4 +236,91 @@ class CommentControllerTest {
 
         verify(commentService).update(anyLong(), anyLong(), anyString(), any(CommentRequest.class));
     }
+
+    @Test
+    @DisplayName("삭제 : 정상")
+    void delete() throws Exception {
+        final Comment comment = COMMENT.init();
+        final User user = comment.getUser();
+        final Post post = comment.getPost();
+
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION.init());
+        given(commentService.delete(eq(post.getId()), eq(user.getId()), eq(user.getUsername()))).willReturn(comment.getId());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + post.getId() + "/comments/" + comment.getId())
+                    .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value(SUCCESS))
+                .andExpect(jsonPath("$.result.message").value("댓글 삭제 완료"))
+                .andExpect(jsonPath("$.result.id").value(comment.getId()));
+
+        verify(commentService).delete(eq(post.getId()), eq(user.getId()), eq(user.getUsername()));
+    }
+
+    @Test
+    @DisplayName("삭제 : 실패 - 인증 실패")
+    void delete_invalid_token() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(false);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + 1 + "/comments/" + 1)
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
+                .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
+                .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
+
+        verify(commentService, never()).delete(anyLong(), anyLong(), anyString());
+    }
+
+    @Test
+    @DisplayName("삭제 : 실패 - 게시물이 없는 경우")
+    void delete_post_not_found() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION.init());
+        given(commentService.delete(anyLong(), anyLong(), anyString())).willThrow(new PostNotFoundException());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + 1 + "/comments/" + 1)
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().is(POST_NOT_FOUND.getHttpStatus().value()))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
+                .andExpect(jsonPath("$.result.errorCode").value(POST_NOT_FOUND.name()))
+                .andExpect(jsonPath("$.result.message").value(POST_NOT_FOUND.getMessage()));
+
+        verify(commentService).delete(anyLong(), anyLong(), anyString());
+    }
+
+    @Test
+    @DisplayName("삭제 : 실패 - 삭제 권한 없음")
+    void delete_invalid_permission() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION.init());
+        given(commentService.delete(anyLong(), anyLong(), anyString())).willThrow(new InvalidPermissionException());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + 1 + "/comments/" + 1)
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().is(INVALID_PERMISSION.getHttpStatus().value()))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
+                .andExpect(jsonPath("$.result.errorCode").value(INVALID_PERMISSION.name()))
+                .andExpect(jsonPath("$.result.message").value(INVALID_PERMISSION.getMessage()));
+
+        verify(commentService).delete(anyLong(), anyLong(), anyString());
+    }
+
+    @Test
+    @DisplayName("삭제 : 실패 - 데이터베이스 에러")
+    void delete_database_error() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION.init());
+        given(commentService.delete(anyLong(), anyLong(), anyString())).willThrow(new PersistenceException());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + 1 + "/comments/" + 1)
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().is(DATABASE_ERROR.getHttpStatus().value()))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
+                .andExpect(jsonPath("$.result.errorCode").value(DATABASE_ERROR.name()))
+                .andExpect(jsonPath("$.result.message").value(DATABASE_ERROR.getMessage()));
+
+        verify(commentService).delete(anyLong(), anyLong(), anyString());
+    }
 }

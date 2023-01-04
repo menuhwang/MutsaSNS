@@ -159,4 +159,77 @@ class CommentServiceTest {
         assertEquals(comment.getUser().getUsername(), updateResponse.getUserName());
         assertEquals(updateRequest.getComment(), updateResponse.getComment());
     }
+
+    @Test
+    @DisplayName("삭제 : 정상")
+    void delete() {
+        final User user = USER.init();
+        final Post post  = POST.init();
+        final Comment comment = COMMENT.init();
+
+        given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
+        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+        given(commentRepository.findById(comment.getId())).willReturn(Optional.of(comment));
+
+        Long deletedId = commentService.delete(post.getId(), comment.getId(), user.getUsername());
+
+        assertEquals(comment.getId(), deletedId);
+    }
+
+    @Test
+    @DisplayName("삭제 : 실패 - 해당 유저 없음")
+    void delete_user_not_found() {
+        when(userRepository.findByUsername(anyString())).thenThrow(new UserNotFoundException());
+
+        AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> commentService.delete(1L, 1L, "user1"));
+        assertEquals(USER_NOT_FOUND, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("삭제 : 실패 - 해당 게시물 없음")
+    void delete_post_not_found() {
+        given(userRepository.findByUsername(anyString())).willReturn(Optional.of(USER.init()));
+        when(postRepository.findById(anyLong())).thenThrow(new PostNotFoundException());
+
+        AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> commentService.delete(1L, 1L, "user1"));
+        assertEquals(POST_NOT_FOUND, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("삭제 : 실패 - 해당 댓글 없음")
+    void delete_comment_not_found() {
+        given(userRepository.findByUsername(anyString())).willReturn(Optional.of(USER.init()));
+        given(postRepository.findById(anyLong())).willReturn(Optional.of(POST.init()));
+        when(commentRepository.findById(anyLong())).thenThrow(new CommentNotFoundException());
+
+        AbstractBaseException e = assertThrows(CommentNotFoundException.class, () -> commentService.delete(1L, 1L, "user1"));
+        assertEquals(COMMENT_NOT_FOUND, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("삭제 : 실패 - 권한 없음")
+    void delete_invalid_permission() {
+        given(userRepository.findByUsername(anyString())).willReturn(Optional.of(OTHER_USER.init()));
+        given(postRepository.findById(anyLong())).willReturn(Optional.of(POST.init()));
+        given(commentRepository.findById(anyLong())).willReturn(Optional.of(COMMENT.init()));
+
+        AbstractBaseException e = assertThrows(InvalidPermissionException.class, () -> commentService.delete(1L, 1L, "other_user"));
+        assertEquals(INVALID_PERMISSION, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("삭제 : 정상 - 어드민 유저")
+    void delete_admin() {
+        final User admin = ADMIN.init();
+        final Post post = POST.init();
+        final Comment comment = COMMENT.init();
+
+        given(userRepository.findByUsername(anyString())).willReturn(Optional.of(admin));
+        given(postRepository.findById(anyLong())).willReturn(Optional.of(post));
+        given(commentRepository.findById(anyLong())).willReturn(Optional.of(comment));
+
+        Long deletedId = commentService.delete(post.getId(), comment.getId(), admin.getUsername());
+
+        assertEquals(comment.getId(), deletedId);
+    }
 }
