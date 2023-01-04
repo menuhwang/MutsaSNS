@@ -15,17 +15,20 @@ public class CommentDetailResponse {
     private Long postId;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime lastModifiedAt;
 
     private CommentDetailResponse() {
     }
 
     @Builder
-    public CommentDetailResponse(Long id, String comment, String userName, Long postId, LocalDateTime createdAt) {
+    public CommentDetailResponse(Long id, String comment, String userName, Long postId, LocalDateTime createdAt, LocalDateTime lastModifiedAt) {
         this.id = id;
         this.comment = comment;
         this.userName = userName;
         this.postId = postId;
         this.createdAt = createdAt;
+        this.lastModifiedAt = lastModifiedAt;
     }
 
     public static CommentDetailResponse of(Comment comment) {
@@ -35,6 +38,7 @@ public class CommentDetailResponse {
                 .userName(comment.getUser().getUsername())
                 .postId(comment.getPost().getId())
                 .createdAt(comment.getCreatedDateTime())
+                .lastModifiedAt(comment.getLastModifiedDateTime())
                 .build();
     }
 }
