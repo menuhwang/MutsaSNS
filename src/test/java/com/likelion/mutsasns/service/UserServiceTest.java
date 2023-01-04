@@ -18,7 +18,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 
 import static com.likelion.mutsasns.exception.ErrorCode.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.likelion.mutsasns.support.TestConstant.MOCK_TOKEN;
+import static com.likelion.mutsasns.support.fixture.UserFixture.ADMIN;
+import static com.likelion.mutsasns.support.fixture.UserFixture.USER;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
@@ -31,100 +35,92 @@ class UserServiceTest {
     private final UserRepository userRepository = Mockito.mock(UserRepository.class);
     private final UserService userService = new UserService(passwordEncoder, jwtProvider, userRepository);
 
-    private final String MOCK_TOKEN = "mockJwtToken";
-    private final Long USER_ID = 1L;
-    private final Long ADMIN_ID = 2L;
-    private final String USERNAME = "tester";
-    private final String ADMIN_USERNAME = "admin";
-    private final String PASSWORD = "password";
-    private final User USER = User.builder()
-            .id(USER_ID)
-            .username(USERNAME)
-            .password(PASSWORD)
-            .build();
-    private final User ADMIN = User.builder()
-            .id(ADMIN_ID)
-            .username(ADMIN_USERNAME)
-            .password(PASSWORD)
-            .build();
-    private final LoginRequest LOGIN_REQUEST = new LoginRequest(USERNAME, PASSWORD);
-    private final JoinRequest JOIN_REQUEST = new JoinRequest(USERNAME, PASSWORD);
-    private final UpdateUserRoleRequest UPDATE_USER_ROLE_REQUEST = new UpdateUserRoleRequest("admin");
-
     @Test
     @DisplayName("로그인 : 정상")
     void login() {
+        final LoginRequest loginRequest = USER.loginRequest();
+
         given(jwtProvider.generateToken(any(User.class))).willReturn(MOCK_TOKEN);
-        given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
+        given(userRepository.findByUsername(loginRequest.getUserName())).willReturn(Optional.of(USER.init()));
         given(passwordEncoder.matches(anyString(), anyString())).willReturn(true);
-        LoginResponse loginResponse = userService.login(LOGIN_REQUEST);
+        LoginResponse loginResponse = userService.login(loginRequest);
 
         assertEquals(MOCK_TOKEN, loginResponse.getJwt());
         verify(jwtProvider).generateToken(any(User.class));
-        verify(userRepository).findByUsername(USERNAME);
+        verify(userRepository).findByUsername(loginRequest.getUserName());
     }
 
     @Test
     @DisplayName("로그인 : 실패 - 해당 유저 없음")
     void login_user_not_found() {
-        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
-        AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> userService.login(LOGIN_REQUEST));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
+        AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> userService.login(USER.loginRequest()));
         assertEquals(USER_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
     @DisplayName("로그인 : 실패 - 비밀번호 불일치")
     void login_invalid_password() {
-        given(userRepository.findByUsername(USERNAME)).willReturn(Optional.of(USER));
+        given(userRepository.findByUsername(anyString())).willReturn(Optional.of(USER.init()));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
-        AbstractBaseException e = assertThrows(InvalidPasswordException.class, () -> userService.login(LOGIN_REQUEST));
+        AbstractBaseException e = assertThrows(InvalidPasswordException.class, () -> userService.login(USER.loginRequest()));
         assertEquals(INVALID_PASSWORD, e.getErrorCode());
     }
 
     @Test
     @DisplayName("회원가입 : 정상")
     void join() {
-        given(userRepository.existsByUsername(USERNAME)).willReturn(false);
-        given(passwordEncoder.encode(PASSWORD)).willReturn(PASSWORD);
-        when(userRepository.save(any(User.class))).thenReturn(USER);
+        final User user = USER.init();
+        final JoinRequest joinRequest = USER.joinRequest();
 
-        JoinResponse result = userService.join(JOIN_REQUEST);
+        given(userRepository.existsByUsername(user.getUsername())).willReturn(false);
+        given(passwordEncoder.encode(joinRequest.getPassword())).willReturn(joinRequest.getPassword());
+        when(userRepository.save(any(User.class))).thenReturn(user);
 
-        assertEquals(USER_ID, result.getUserId());
-        assertEquals(USERNAME, result.getUserName());
+        JoinResponse result = userService.join(joinRequest);
 
-        verify(userRepository).existsByUsername(USERNAME);
-        verify(passwordEncoder).encode(PASSWORD);
+        assertEquals(user.getId(), result.getUserId());
+        assertEquals(user.getUsername(), result.getUserName());
+
+        verify(userRepository).existsByUsername(joinRequest.getUserName());
+        verify(passwordEncoder).encode(joinRequest.getPassword());
         verify(userRepository).save(any(User.class));
     }
 
     @Test
     @DisplayName("회원가입 : 실패 - 아이디 중복")
     void join_duplicate_username() {
-        when(userRepository.existsByUsername(USERNAME)).thenReturn(true);
+        when(userRepository.existsByUsername(anyString())).thenReturn(true);
 
-        AbstractBaseException e = assertThrows(DuplicateUsernameException.class, () -> userService.join(JOIN_REQUEST));
+        AbstractBaseException e = assertThrows(DuplicateUsernameException.class, () -> userService.join(USER.joinRequest()));
         assertEquals(DUPLICATED_USERNAME, e.getErrorCode());
     }
 
     @Test
     @DisplayName("권한변경 : 정상")
     void updateRole() {
-        given(userRepository.findByUsername(ADMIN_USERNAME)).willReturn(Optional.of(ADMIN));
-        given(userRepository.findById(USER_ID)).willReturn(Optional.of(USER));
+        final User admin = ADMIN.init();
+        final User user = USER.init();
+        final UpdateUserRoleRequest updateUserRoleRequest = USER.updateRoleRequest(Role.ROLE_ADMIN);
 
-        UserDetailResponse result = userService.updateRole(ADMIN_USERNAME, USER_ID, UPDATE_USER_ROLE_REQUEST);
+        given(userRepository.findByUsername(admin.getUsername())).willReturn(Optional.of(admin));
+        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
 
-        assertEquals(USER_ID, result.getUserId());
+        UserDetailResponse result = userService.updateRole(admin.getUsername(), user.getId(), updateUserRoleRequest);
+
+        assertEquals(user.getId(), result.getUserId());
         assertEquals(Role.ROLE_ADMIN, result.getRole());
     }
 
     @Test
     @DisplayName("권한변경 : 실패 - 본인 권한 변경 시도")
     void updateRole_update_user_role_myself() {
-        given(userRepository.findByUsername(ADMIN_USERNAME)).willReturn(Optional.of(ADMIN));
+        final User admin = ADMIN.init();
+        final UpdateUserRoleRequest updateUserRoleRequest = ADMIN.updateRoleRequest(Role.ROLE_USER);
 
-        AbstractBaseException e = assertThrows(UpdateUserRoleException.class, () -> userService.updateRole(ADMIN_USERNAME, ADMIN_ID, UPDATE_USER_ROLE_REQUEST));
+        given(userRepository.findByUsername(anyString())).willReturn(Optional.of(ADMIN.init()));
+
+        AbstractBaseException e = assertThrows(UpdateUserRoleException.class, () -> userService.updateRole(admin.getUsername(), admin.getId(), updateUserRoleRequest));
         assertEquals(INVALID_UPDATE_USER_ROLE, e.getErrorCode());
     }
 }

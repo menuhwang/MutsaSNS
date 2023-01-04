@@ -5,8 +5,8 @@ stages:
 build:
   image: openjdk:11.0-slim
   stage: build
-  # rules:
-    # - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH =~ /^feature*/
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH =~ /^feature*/
   script:
     - ./gradlew clean
     - ./gradlew build -x test
@@ -20,8 +20,8 @@ build:
 package:
   image: docker:latest
   stage: dockerbuild-push
-  # rules:
-    # - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH =~ /^feature*/
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH =~ /^feature*/
   services:
     - docker:dind
   before_script:

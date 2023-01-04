@@ -4,6 +4,33 @@
 
 ---
 
+### 1주차 미션 요약
+
+#### 필수과제
+
+- [ ] 댓글
+- [ ] 좋아요
+- [ ] 마이피드
+- [ ] 알림
+- [ ] Swagger에 ApiOperation을 써서 Controller 설명 보이게 할 것
+
+#### 도전과제
+
+- [ ] 댓글, 좋아요, 알림 UI구현
+- [ ] Admin기능
+
+---
+
+#### [접근 방법]
+
+#### [특이사항]
+
+**[아쉬운 점]**
+
+**[궁금한 점]**
+
+### 1주차 미션 요약
+
 #### 필수과제
 
 - [x] AWS EC2에 Docker 배포
@@ -26,8 +53,6 @@
 - [ ] ADMIN 회원이 로그인 시 자신이 쓴 글이 아닌 글과 댓글에 수정, 삭제를 할 수 있는 기능
   - [x] BE
   - [ ] FE
-
-### N주차 미션 요약
 
 ---
 
@@ -81,6 +106,9 @@
 ### BE
 > http://ec2-43-200-183-93.ap-northeast-2.compute.amazonaws.com:8080
 
+### Swagger
+> http://ec2-43-200-183-93.ap-northeast-2.compute.amazonaws.com:8080/swagger-ui/index.html
+
 ### 데모 로그인
 
 > ID : user1
@@ -108,19 +136,19 @@ Admin
 **Request Body**
 ```json
 {
-"userName": "String",
-"password": "String",
+  "userName": "String",
+  "password": "String"
 }
 ```
 
 **Response Body**
 ```json
 {
-    "resultCode": "SUCCESS",
-    "result": {
-        "userId": Number,
-        "userName": "String"
-    }
+  "resultCode": "SUCCESS",
+  "result": {
+    "userId": 0,
+    "userName": "String"
+  }
 }
 ```
 <br>
@@ -131,8 +159,8 @@ Admin
 **RequestBody**
 ```json
 {
-"userName": "String",
-"password": "String"
+  "userName": "String",
+  "password": "String"
 }
 ```
 
@@ -158,7 +186,7 @@ Admin
 {
   "resultCode": "SUCCESS",
   "result": {
-    "userId": Number,
+    "userId": 0,
     "userName": "String",
     "role": "ROLE_USER" | "ROLE_ADMIN"
   }
@@ -178,13 +206,13 @@ Admin
     "content": PostDetailResponse[],
     "pageable": Pageable,
     "last": boolean,
-    "totalElements": Number,
-    "totalPages": Number,
-    "size": Number,
-    "number": Number,
+    "totalElements": 0,
+    "totalPages": 0,
+    "size": 0,
+    "number": 0,
     "first": boolean,
     "sort": Sort,
-    "numberOfElements": Number,
+    "numberOfElements": 0,
     "empty": boolean
   }
 }
@@ -196,7 +224,7 @@ Admin
 **Response Body**
 ```json
 {
-  "id": Number,
+  "id": 0,
   "title": "String",
   "body": "String",
   "userName": "String",
@@ -211,19 +239,19 @@ Admin
 **Request Body**
 ```json
 {
-    "title": "String",
-    "body": "String"
+  "title": "String",
+  "body": "String"
 }
 ```
 
 **Response Body**
 ```json
 {
-    "resultCode": "SUCCESS",
-    "result": {
-        "message": "포스트 등록 완료",
-        "postId": Number
-    }
+  "resultCode": "SUCCESS",
+  "result": {
+    "message": "포스트 등록 완료",
+    "postId": 0
+  }
 }
 ```
 
@@ -233,19 +261,19 @@ Admin
 **Request Body**
 ```json
 {
-    "title": "String",
-    "body": "String"
+  "title": "String",
+  "body": "String"
 }
 ```
 
 **Response Body**
 ```json
 {
-    "resultCode": "SUCCESS",
-    "result": {
-        "message": "포스트 수정 완료",
-        "postId": Number
-    }
+  "resultCode": "SUCCESS",
+  "result": {
+    "message": "포스트 수정 완료",
+    "postId": 0
+  }
 }
 ```
 
@@ -255,11 +283,61 @@ Admin
 **Response Body**
 ```json
 {
-    "resultCode": "SUCCESS",
-    "result": {
-        "message": "포스트 삭제 완료",
-        "postId": Number
-    }
+  "resultCode": "SUCCESS",
+  "result": {
+    "message": "포스트 삭제 완료",
+    "postId": 0
+  }
 }
 ```
 <br>
+
+### Comment
+#### 작성
+`POST /api/v1/posts/{postId}/comments`
+
+**Request Body**
+```json
+{
+  "comment" : "String"
+}
+
+```
+
+**Response Body**
+```json
+{
+  "resultCode": "SUCCESS",
+  "result":{
+    "id": 0,
+    "comment": "String",
+    "userName": "String",
+    "postId": 0,
+    "createdAt": "yyyy-mm-dd hh:mm:ss"
+  }
+}
+```
+
+#### 특정 게시물 댓글 조회
+`GET /posts/{postId}/comments[?page=0]`
+
+**Response Body**
+```json
+{
+  "resultCode": "SUCCESS",
+  "result": {
+    "content": CommentDetailResponse[],
+    "pageable": Pageable,
+    "last": boolean,
+    "totalElements": 0,
+    "totalPages": 0,
+    "size": 0,
+    "number": 0,
+    "first": boolean,
+    "sort": Sort,
+    "numberOfElements": 0,
+    "empty": boolean
+  }
+}
+
+```
