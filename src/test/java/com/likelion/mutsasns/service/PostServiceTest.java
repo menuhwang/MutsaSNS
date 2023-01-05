@@ -64,7 +64,7 @@ class PostServiceTest {
         final User user = USER.init();
         final Post post = POST.init(user);
 
-        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        when(postRepository.findByIdAndDeletedDateTimeIsNull(post.getId())).thenReturn(Optional.of(post));
 
         PostDetailResponse result = postService.findById(post.getId());
 
@@ -80,7 +80,7 @@ class PostServiceTest {
         final User user = USER.init();
         final Post post = POST.init(user);
 
-        when(postRepository.findById(post.getId())).thenReturn(Optional.empty());
+        when(postRepository.findByIdAndDeletedDateTimeIsNull(post.getId())).thenReturn(Optional.empty());
 
         AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> postService.findById(post.getId()));
         assertEquals(POST_NOT_FOUND, e.getErrorCode());
@@ -93,7 +93,7 @@ class PostServiceTest {
         final Post post = POST.init(user);
         final PostRequest postUpdateRequest = POST.updateRequest();
 
-        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+        given(postRepository.findByIdAndDeletedDateTimeIsNull(post.getId())).willReturn(Optional.of(post));
         given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
 
         Long result = postService.update(user.getUsername(), post.getId(), postUpdateRequest);
@@ -108,7 +108,7 @@ class PostServiceTest {
         final Post post = POST.init(user);
         final PostRequest postUpdateRequest = POST.updateRequest();
 
-        when(postRepository.findById(post.getId())).thenReturn(Optional.empty());
+        when(postRepository.findByIdAndDeletedDateTimeIsNull(post.getId())).thenReturn(Optional.empty());
 
         AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> postService.update(user.getUsername(), post.getId(), postUpdateRequest));
         assertEquals(POST_NOT_FOUND, e.getErrorCode());
@@ -121,7 +121,7 @@ class PostServiceTest {
         final Post post = POST.init(user);
         final PostRequest postUpdateRequest = POST.updateRequest();
 
-        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+        given(postRepository.findByIdAndDeletedDateTimeIsNull(post.getId())).willReturn(Optional.of(post));
         when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.empty());
 
         AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> postService.update(user.getUsername(), post.getId(), postUpdateRequest));
@@ -136,7 +136,7 @@ class PostServiceTest {
         final Post post = POST.init(otherUser);
         final PostRequest postUpdateRequest = POST.updateRequest();
 
-        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+        given(postRepository.findByIdAndDeletedDateTimeIsNull(post.getId())).willReturn(Optional.of(post));
         given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
 
         AbstractBaseException e = assertThrows(InvalidPermissionException.class, () -> postService.update(user.getUsername(), post.getId(), postUpdateRequest));
@@ -149,7 +149,7 @@ class PostServiceTest {
         final User user = USER.init();
         final Post post = POST.init(user);
 
-        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+        given(postRepository.findByIdAndDeletedDateTimeIsNull(post.getId())).willReturn(Optional.of(post));
         given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
 
         Long result = postService.deleteById(user.getUsername(), post.getId());
@@ -163,7 +163,7 @@ class PostServiceTest {
         final User user = USER.init();
         final Post post = POST.init(user);
 
-        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+        given(postRepository.findByIdAndDeletedDateTimeIsNull(post.getId())).willReturn(Optional.of(post));
         when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.empty());
 
         AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> postService.deleteById(user.getUsername(), post.getId()));
@@ -176,7 +176,7 @@ class PostServiceTest {
         final User user = USER.init();
         final Post post = POST.init(user);
 
-        when(postRepository.findById(post.getId())).thenReturn(Optional.empty());
+        when(postRepository.findByIdAndDeletedDateTimeIsNull(post.getId())).thenReturn(Optional.empty());
 
         AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> postService.deleteById(user.getUsername(), post.getId()));
         assertEquals(POST_NOT_FOUND, e.getErrorCode());
