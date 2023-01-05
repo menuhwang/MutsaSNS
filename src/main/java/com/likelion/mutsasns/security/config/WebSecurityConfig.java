@@ -17,6 +17,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     private final JwtProvider jwtProvider;
+    public static final String[] GET_AUTHENTICATED_REGEX_LIST = {
+            "^/api/v1/posts/my$",
+    };
 
     public static final String[] POST_AUTHENTICATED_REGEX_LIST = {
             "^/api/v1/posts$",
@@ -46,6 +49,7 @@ public class WebSecurityConfig {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.authorizeHttpRequests()
+                .regexMatchers(HttpMethod.GET, GET_AUTHENTICATED_REGEX_LIST).authenticated()
                 .regexMatchers(HttpMethod.POST, POST_AUTHENTICATED_REGEX_LIST).authenticated()
                 .regexMatchers(HttpMethod.PUT, PUT_AUTHENTICATED_REGEX_LIST).authenticated()
                 .regexMatchers(HttpMethod.DELETE, DELETE_AUTHENTICATED_REGEX_LIST).authenticated()

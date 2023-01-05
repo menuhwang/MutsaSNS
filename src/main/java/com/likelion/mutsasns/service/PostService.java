@@ -33,6 +33,11 @@ public class PostService {
         return PostDetailResponse.of(findPostById(id));
     }
 
+    public Page<PostDetailResponse> findByUsername(String username, Pageable pageable) {
+        User user = findUserByUsername(username);
+        return postRepository.findByUserAndDeletedDateTimeIsNull(user, pageable).map(PostDetailResponse::of);
+    }
+
     @Transactional
     public Long update(String username, Long id, PostRequest updateRequest) {
         Post post = findTargetPost(username, id);
