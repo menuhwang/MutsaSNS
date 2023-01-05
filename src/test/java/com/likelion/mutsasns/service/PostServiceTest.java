@@ -13,6 +13,7 @@ import com.likelion.mutsasns.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.Optional;
 
@@ -23,6 +24,7 @@ import static com.likelion.mutsasns.support.fixture.UserFixture.USER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
@@ -180,5 +182,14 @@ class PostServiceTest {
 
         AbstractBaseException e = assertThrows(PostNotFoundException.class, () -> postService.deleteById(user.getUsername(), post.getId()));
         assertEquals(POST_NOT_FOUND, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("유저 아이디로 조회 : 실패 - 해당 유저 없음")
+    void findByUsername_user_not_found() {
+        when(userRepository.findByUsername(anyString())).thenThrow(new UserNotFoundException());
+
+        AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> postService.findByUsername(USER.init().getUsername(), PageRequest.of(0, 20)));
+        assertEquals(USER_NOT_FOUND, e.getErrorCode());
     }
 }

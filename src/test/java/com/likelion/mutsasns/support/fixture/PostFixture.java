@@ -39,6 +39,15 @@ public enum PostFixture {
                 .build();
     }
 
+    public Post init(Long id) {
+        return Post.builder()
+                .id(id)
+                .title(title)
+                .body(body)
+                .user(user)
+                .build();
+    }
+
     public PostRequest createRequest() {
         return new PostRequest(title, body);
     }
