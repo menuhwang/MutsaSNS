@@ -36,10 +36,7 @@ public class Post {
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime lastModifiedDateTime;
-
-    public Long getUserId() {
-        return this.user.getId();
-    }
+    private LocalDateTime deletedDateTime;
 
     @Builder
     public Post(Long id, String title, String body, User user) {
@@ -52,5 +49,13 @@ public class Post {
     public void update(Post update) {
         this.title = update.getTitle();
         this.body = update.getBody();
+    }
+
+    public void delete() {
+        this.deletedDateTime = LocalDateTime.now();
+    }
+
+    public boolean equalUser(User user) {
+        return this.user.getId().equals(user.getId());
     }
 }
