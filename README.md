@@ -10,7 +10,7 @@
 
 - [x] 댓글
 - [ ] 좋아요
-- [ ] 마이피드
+- [x] 마이피드
 - [ ] 알림
 - [ ] Swagger에 ApiOperation을 써서 Controller 설명 보이게 할 것
 
@@ -21,9 +21,16 @@
 
 ---
 
-#### [접근 방법]
-
 #### [특이사항]
+
+- 시큐리티 antMatchers 패턴 중복 문제.
+  - /api/v1/posts/{id} -> /api/v1/posts/**
+  - /api/v1/posts/my -> /api/v1/posts/my
+  - 두 URI의 패턴이 같아 시큐리티 antMatchers 설정 우선 순위가 중요해짐.
+  - 해결책
+    1. 우선 순위에 따라 설정.
+    2. 패턴을 더 세분화해 설정. **[채택]**
+  - antMatchers -> regexMatchers 정규식 활용.
 
 **[아쉬운 점]**
 
@@ -291,10 +298,33 @@
   }
 }
 ```
+
+#### 마이피드 : Authorize
+`GET /api/v1/posts/my`
+
+**Response Body**
+```json
+{
+  "resultCode": "SUCCESS",
+  "result": {
+      "content": PostDetailResponse[],
+  "pageable": Pageable,
+  "last": boolean,
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 0,
+  "number": 0,
+  "first": boolean,
+  "sort": Sort,
+  "numberOfElements": 0,
+  "empty": boolean
+  }
+}
+```
 <br>
 
 ### Comment
-#### 작성
+#### 작성 : Authorize
 `POST /api/v1/posts/{postId}/comments`
 
 **Request Body**
@@ -341,7 +371,7 @@
 }
 ```
 
-#### 댓글 수정
+#### 댓글 수정 : Authorize
 `PUT /posts/{postId}/comments/{id}`
 
 **Request Body**
@@ -366,7 +396,7 @@
 }
 ```
 
-#### 댓글 삭제
+#### 댓글 삭제 : Authorize
 `DELETE /posts/{postId}/comments/{id}`
 
 **Response Body**

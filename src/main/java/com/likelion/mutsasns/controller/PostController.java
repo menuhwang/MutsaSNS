@@ -38,6 +38,13 @@ public class PostController {
         return ResultResponse.success(new PostResultResponse("포스트 등록 완료", createdId));
     }
 
+    @Login
+    @GetMapping("/my")
+    public ResultResponse<Page<PostDetailResponse>> findMyPosts(@ApiIgnore Principal principal, @PageableDefault(size = 20, sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
+        log.info("마이 피드 조회 user:{}", principal.getName());
+        return ResultResponse.success(postService.findByUsername(principal.getName(), pageable));
+    }
+
     @GetMapping("/{id}")
     public ResultResponse<PostDetailResponse> findById(@PathVariable Long id) {
         log.info("포스트 상세조회 id:{}", id);

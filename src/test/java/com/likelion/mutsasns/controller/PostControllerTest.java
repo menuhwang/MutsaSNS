@@ -14,10 +14,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.List;
 
 import static com.likelion.mutsasns.exception.ErrorCode.*;
 import static com.likelion.mutsasns.support.TestConstant.*;
@@ -288,5 +293,42 @@ class PostControllerTest {
         verify(jwtProvider).validateToken(MOCK_TOKEN);
         verify(jwtProvider).getAuthentication(MOCK_TOKEN);
         verify(postService).deleteById(anyString(), anyLong());
+    }
+
+    @Test
+    @DisplayName("마이피드 : 정상")
+    void findMyPosts() throws Exception {
+        final User user = USER.init();
+        final Page<PostDetailResponse> posts = new PageImpl<>(List.of(
+                PostDetailResponse.of(POST.init(1L)),
+                PostDetailResponse.of(POST.init(2L)),
+                PostDetailResponse.of(POST.init(3L))
+        ));
+
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION.init());
+        given(postService.findByUsername(eq(user.getUsername()), any(Pageable.class))).willReturn(posts);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/posts/my")
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value(SUCCESS))
+                .andExpect(jsonPath("$.result.content").isArray())
+                .andExpect(jsonPath("$.result.pageable").exists())
+                .andExpect(jsonPath("$.result.size").exists());
+
+        verify(postService).findByUsername(eq(user.getUsername()), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("마이피드 : 실패 - 로그인하지 않은 경우")
+    void findMyPosts_no_token_header() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/posts/my"))
+                .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
+                .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
+                .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
+
+        verify(postService, never()).deleteById(anyString(), anyLong());
     }
 }
