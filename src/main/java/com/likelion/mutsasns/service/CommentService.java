@@ -71,7 +71,7 @@ public class CommentService {
     }
 
     private Comment findCommentById(Long id) {
-        return commentRepository.findById(id).orElseThrow(CommentNotFoundException::new);
+        return commentRepository.findByIdAndDeletedDateTimeIsNull(id).orElseThrow(CommentNotFoundException::new);
     }
 
     private void validRequest(Comment comment, Post post) {

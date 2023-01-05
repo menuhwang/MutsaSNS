@@ -89,7 +89,7 @@ class CommentServiceTest {
 
         given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
         given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
-        given(commentRepository.findById(comment.getId())).willReturn(Optional.of(comment));
+        given(commentRepository.findByIdAndDeletedDateTimeIsNull(comment.getId())).willReturn(Optional.of(comment));
 
         CommentDetailResponse updateResponse = commentService.update(post.getId(), comment.getId(), user.getUsername(), updateRequest);
 
@@ -123,7 +123,7 @@ class CommentServiceTest {
     void update_comment_not_found() {
         given(userRepository.findByUsername(anyString())).willReturn(Optional.of(USER.init()));
         given(postRepository.findById(anyLong())).willReturn(Optional.of(POST.init()));
-        when(commentRepository.findById(anyLong())).thenThrow(new CommentNotFoundException());
+        when(commentRepository.findByIdAndDeletedDateTimeIsNull(anyLong())).thenThrow(new CommentNotFoundException());
 
         AbstractBaseException e = assertThrows(CommentNotFoundException.class, () -> commentService.update(1L, 1L, "user1", COMMENT.updateRequest()));
         assertEquals(COMMENT_NOT_FOUND, e.getErrorCode());
@@ -134,7 +134,7 @@ class CommentServiceTest {
     void update_invalid_permission() {
         given(userRepository.findByUsername(anyString())).willReturn(Optional.of(OTHER_USER.init()));
         given(postRepository.findById(anyLong())).willReturn(Optional.of(POST.init()));
-        given(commentRepository.findById(anyLong())).willReturn(Optional.of(COMMENT.init()));
+        given(commentRepository.findByIdAndDeletedDateTimeIsNull(anyLong())).willReturn(Optional.of(COMMENT.init()));
 
         AbstractBaseException e = assertThrows(InvalidPermissionException.class, () -> commentService.update(1L, 1L, "other_user", COMMENT.updateRequest()));
         assertEquals(INVALID_PERMISSION, e.getErrorCode());
@@ -150,7 +150,7 @@ class CommentServiceTest {
 
         given(userRepository.findByUsername(anyString())).willReturn(Optional.of(admin));
         given(postRepository.findById(anyLong())).willReturn(Optional.of(post));
-        given(commentRepository.findById(anyLong())).willReturn(Optional.of(comment));
+        given(commentRepository.findByIdAndDeletedDateTimeIsNull(anyLong())).willReturn(Optional.of(comment));
 
         CommentDetailResponse updateResponse = commentService.update(post.getId(), comment.getId(), admin.getUsername(), updateRequest);
 
@@ -169,7 +169,7 @@ class CommentServiceTest {
 
         given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
         given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
-        given(commentRepository.findById(comment.getId())).willReturn(Optional.of(comment));
+        given(commentRepository.findByIdAndDeletedDateTimeIsNull(comment.getId())).willReturn(Optional.of(comment));
 
         Long deletedId = commentService.delete(post.getId(), comment.getId(), user.getUsername());
 
@@ -200,7 +200,7 @@ class CommentServiceTest {
     void delete_comment_not_found() {
         given(userRepository.findByUsername(anyString())).willReturn(Optional.of(USER.init()));
         given(postRepository.findById(anyLong())).willReturn(Optional.of(POST.init()));
-        when(commentRepository.findById(anyLong())).thenThrow(new CommentNotFoundException());
+        when(commentRepository.findByIdAndDeletedDateTimeIsNull(anyLong())).thenThrow(new CommentNotFoundException());
 
         AbstractBaseException e = assertThrows(CommentNotFoundException.class, () -> commentService.delete(1L, 1L, "user1"));
         assertEquals(COMMENT_NOT_FOUND, e.getErrorCode());
@@ -211,7 +211,7 @@ class CommentServiceTest {
     void delete_invalid_permission() {
         given(userRepository.findByUsername(anyString())).willReturn(Optional.of(OTHER_USER.init()));
         given(postRepository.findById(anyLong())).willReturn(Optional.of(POST.init()));
-        given(commentRepository.findById(anyLong())).willReturn(Optional.of(COMMENT.init()));
+        given(commentRepository.findByIdAndDeletedDateTimeIsNull(anyLong())).willReturn(Optional.of(COMMENT.init()));
 
         AbstractBaseException e = assertThrows(InvalidPermissionException.class, () -> commentService.delete(1L, 1L, "other_user"));
         assertEquals(INVALID_PERMISSION, e.getErrorCode());
@@ -226,7 +226,7 @@ class CommentServiceTest {
 
         given(userRepository.findByUsername(anyString())).willReturn(Optional.of(admin));
         given(postRepository.findById(anyLong())).willReturn(Optional.of(post));
-        given(commentRepository.findById(anyLong())).willReturn(Optional.of(comment));
+        given(commentRepository.findByIdAndDeletedDateTimeIsNull(anyLong())).willReturn(Optional.of(comment));
 
         Long deletedId = commentService.delete(post.getId(), comment.getId(), admin.getUsername());
 
