@@ -15,57 +15,44 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-public class Post {
+public class PostLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
-    private String title;
-
-    @Column(nullable = false)
-    private String body;
-
-    private int likes;
-
-    @ManyToOne(optional = false)
+    private boolean liked;
+    @ManyToOne
+    private Post post;
+    @ManyToOne
     private User user;
-
     @CreatedDate
     @Column(nullable = false)
     private LocalDateTime createdDateTime;
-
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime lastModifiedDateTime;
-    private LocalDateTime deletedDateTime;
 
     @Builder
-    public Post(Long id, String title, String body, User user) {
+    public PostLike(Long id, Post post, User user) {
         this.id = id;
-        this.title = title;
-        this.body = body;
+        this.post = post;
         this.user = user;
     }
 
-    public void update(Post update) {
-        this.title = update.getTitle();
-        this.body = update.getBody();
+    public static PostLike of(Post post, User user) {
+        return PostLike.builder()
+                .post(post)
+                .user(user)
+                .build();
     }
 
-    public void delete() {
-        this.deletedDateTime = LocalDateTime.now();
+    public boolean likes() {
+        if (liked) post.unlikes();
+        else post.likes();
+        toggleLikes();
+        return liked;
     }
 
-    public synchronized void likes() {
-        likes++;
-    }
-
-    public synchronized void unlikes() {
-        if (likes > 0) likes--;
-    }
-
-    public boolean equalUser(User user) {
-        return this.user.getId().equals(user.getId());
+    private void toggleLikes() {
+        liked = !liked;
     }
 }

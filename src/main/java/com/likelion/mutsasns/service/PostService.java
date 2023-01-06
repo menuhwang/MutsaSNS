@@ -1,6 +1,7 @@
 package com.likelion.mutsasns.service;
 
 import com.likelion.mutsasns.domain.post.Post;
+import com.likelion.mutsasns.domain.post.PostLike;
 import com.likelion.mutsasns.domain.user.Role;
 import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.post.PostDetailResponse;
@@ -8,6 +9,7 @@ import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
+import com.likelion.mutsasns.repository.PostLikeRepository;
 import com.likelion.mutsasns.repository.PostRepository;
 import com.likelion.mutsasns.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
     private final UserRepository userRepository;
 
     public Long create(String username, PostRequest postRequest) {
@@ -54,6 +57,19 @@ public class PostService {
 
     public Page<PostDetailResponse> findAll(Pageable pageable) {
         return postRepository.findByDeletedDateTimeIsNull(pageable).map(PostDetailResponse::of);
+    }
+
+    public boolean likes(Long id, String username) {
+        Post post = findPostById(id);
+        User user = findUserByUsername(username);
+
+        PostLike postLike = postLikeRepository.findByPostAndUser(post, user).orElse(PostLike.of(post, user));
+
+        boolean result = postLike.likes();
+
+        postLikeRepository.save(postLike);
+
+        return result;
     }
 
     private Post findPostById(Long id) {

@@ -1,6 +1,7 @@
 package com.likelion.mutsasns.support.fixture;
 
 import com.likelion.mutsasns.domain.post.Post;
+import com.likelion.mutsasns.domain.post.PostLike;
 import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.post.PostRequest;
 
@@ -46,6 +47,18 @@ public enum PostFixture {
                 .body(body)
                 .user(user)
                 .build();
+    }
+
+    public PostLike likes(Post post, User user) {
+        PostLike postLike = PostLike.builder()
+                .id(1L)
+                .post(post)
+                .user(user)
+                .build();
+
+        postLike.likes();
+
+        return postLike;
     }
 
     public PostRequest createRequest() {
