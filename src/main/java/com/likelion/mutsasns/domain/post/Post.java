@@ -57,11 +57,11 @@ public class Post {
         this.deletedDateTime = LocalDateTime.now();
     }
 
-    public void likes() {
+    public synchronized void likes() {
         likes++;
     }
 
-    public void unlikes() {
+    public synchronized void unlikes() {
         if (likes > 0) likes--;
     }
 
