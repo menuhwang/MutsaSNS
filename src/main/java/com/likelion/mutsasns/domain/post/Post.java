@@ -26,6 +26,8 @@ public class Post {
     @Column(nullable = false)
     private String body;
 
+    private int likes;
+
     @ManyToOne(optional = false)
     private User user;
 
@@ -53,6 +55,14 @@ public class Post {
 
     public void delete() {
         this.deletedDateTime = LocalDateTime.now();
+    }
+
+    public void likes() {
+        likes++;
+    }
+
+    public void unlikes() {
+        if (likes > 0) likes--;
     }
 
     public boolean equalUser(User user) {
