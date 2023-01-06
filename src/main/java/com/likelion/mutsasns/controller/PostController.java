@@ -66,4 +66,12 @@ public class PostController {
         Long deletedId = postService.deleteById(principal.getName(), id);
         return ResultResponse.success(new PostResultResponse("포스트 삭제 완료", deletedId));
     }
+
+    @Login
+    @PostMapping("/{id}/likes")
+    public ResultResponse<String> likes(@ApiIgnore Principal principal, @PathVariable Long id) {
+        log.info("포스트 좋아요 id:{}", id);
+        boolean result = postService.likes(id, principal.getName());
+        return ResultResponse.success(result ? "좋아요를 눌렀습니다." : "좋아요를 취소했습니다.");
+    }
 }
