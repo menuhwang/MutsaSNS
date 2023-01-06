@@ -74,4 +74,10 @@ public class PostController {
         boolean result = postService.likes(id, principal.getName());
         return ResultResponse.success(result ? "좋아요를 눌렀습니다." : "좋아요를 취소했습니다.");
     }
+
+    @GetMapping("/{id}/likes")
+    public ResultResponse<Integer> getLikes(@PathVariable Long id) {
+        log.info("포스트 좋아요 개수 조회 id:{}", id);
+        return ResultResponse.success(postService.findById(id).getLikes());
+    }
 }
