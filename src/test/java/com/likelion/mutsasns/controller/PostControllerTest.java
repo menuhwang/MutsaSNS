@@ -6,6 +6,7 @@ import com.likelion.mutsasns.domain.user.User;
 import com.likelion.mutsasns.dto.post.PostDetailResponse;
 import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
+import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
 import com.likelion.mutsasns.security.provider.JwtProvider;
 import com.likelion.mutsasns.service.PostService;
@@ -28,6 +29,7 @@ import static com.likelion.mutsasns.exception.ErrorCode.*;
 import static com.likelion.mutsasns.support.TestConstant.*;
 import static com.likelion.mutsasns.support.fixture.AuthenticationFixture.AUTHENTICATION;
 import static com.likelion.mutsasns.support.fixture.PostFixture.POST;
+import static com.likelion.mutsasns.support.fixture.UserFixture.OTHER_USER;
 import static com.likelion.mutsasns.support.fixture.UserFixture.USER;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -330,5 +332,77 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
 
         verify(postService, never()).deleteById(anyString(), anyLong());
+    }
+
+    @Test
+    @DisplayName("좋아요 : 정상 - 좋아요")
+    void likes() throws Exception {
+        Post post = POST.init(OTHER_USER.init());
+        User user = USER.init();
+
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION.init());
+        when(postService.likes(post.getId(), user.getUsername())).thenReturn(true);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts/" + post.getId() + "/likes")
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value(SUCCESS))
+                .andExpect(jsonPath("$.result").value("좋아요를 눌렀습니다."));
+
+        verify(postService).likes(post.getId(), user.getUsername());
+    }
+
+    @Test
+    @DisplayName("좋아요 : 정상 - 좋아요 취소")
+    void likes_unlikes() throws Exception {
+        Post post = POST.init(OTHER_USER.init());
+        User user = USER.init();
+
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION.init());
+        when(postService.likes(post.getId(), user.getUsername())).thenReturn(false);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts/" + post.getId() + "/likes")
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value(SUCCESS))
+                .andExpect(jsonPath("$.result").value("좋아요를 취소했습니다."));
+
+        verify(postService).likes(post.getId(), user.getUsername());
+    }
+
+    @Test
+    @DisplayName("좋아요 : 실패 - 해당 유저 없음")
+    void likes_user_not_found() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION.init());
+        when(postService.likes(anyLong(), anyString())).thenThrow(new UserNotFoundException());
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts/" + 1 + "/likes")
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().is(USER_NOT_FOUND.getHttpStatus().value()))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
+                .andExpect(jsonPath("$.result.errorCode").value(USER_NOT_FOUND.name()))
+                .andExpect(jsonPath("$.result.message").value(USER_NOT_FOUND.getMessage()));
+
+        verify(postService).likes(anyLong(), anyString());
+    }
+
+    @Test
+    @DisplayName("좋아요 : 실패 - 해당 게시물 없음")
+    void likes_post_not_found() throws Exception {
+        given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(true);
+        given(jwtProvider.getAuthentication(MOCK_TOKEN)).willReturn(AUTHENTICATION.init());
+        when(postService.likes(anyLong(), anyString())).thenThrow(new PostNotFoundException());
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts/" + 1 + "/likes")
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN))
+                .andExpect(status().is(POST_NOT_FOUND.getHttpStatus().value()))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
+                .andExpect(jsonPath("$.result.errorCode").value(POST_NOT_FOUND.name()))
+                .andExpect(jsonPath("$.result.message").value(POST_NOT_FOUND.getMessage()));
+
+        verify(postService).likes(anyLong(), anyString());
     }
 }
