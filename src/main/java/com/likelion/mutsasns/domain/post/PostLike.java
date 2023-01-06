@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -24,7 +25,11 @@ public class PostLike {
     @ManyToOne
     private User user;
     @CreatedDate
+    @Column(nullable = false)
     private LocalDateTime createdDateTime;
+    @LastModifiedDate
+    @Column(nullable = false)
+    private LocalDateTime lastModifiedDateTime;
 
     @Builder
     public PostLike(Long id, Post post, User user) {
