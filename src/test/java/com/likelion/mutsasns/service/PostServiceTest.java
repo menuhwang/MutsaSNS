@@ -8,6 +8,7 @@ import com.likelion.mutsasns.exception.AbstractBaseException;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
+import com.likelion.mutsasns.repository.PostLikeRepository;
 import com.likelion.mutsasns.repository.PostRepository;
 import com.likelion.mutsasns.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -21,8 +22,7 @@ import static com.likelion.mutsasns.exception.ErrorCode.*;
 import static com.likelion.mutsasns.support.fixture.PostFixture.POST;
 import static com.likelion.mutsasns.support.fixture.UserFixture.OTHER_USER;
 import static com.likelion.mutsasns.support.fixture.UserFixture.USER;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
@@ -31,7 +31,8 @@ import static org.mockito.Mockito.when;
 class PostServiceTest {
     private final PostRepository postRepository = Mockito.mock(PostRepository.class);
     private final UserRepository userRepository = Mockito.mock(UserRepository.class);
-    private final PostService postService = new PostService(postRepository, userRepository);
+    private final PostLikeRepository postLikeRepository = Mockito.mock(PostLikeRepository.class);
+    private final PostService postService = new PostService(postRepository, postLikeRepository, userRepository);
 
     @Test
     @DisplayName("작성 : 정상")
@@ -191,5 +192,37 @@ class PostServiceTest {
 
         AbstractBaseException e = assertThrows(UserNotFoundException.class, () -> postService.findByUsername(USER.init().getUsername(), PageRequest.of(0, 20)));
         assertEquals(USER_NOT_FOUND, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("좋아요 : 새로운 좋아요")
+    void likes() {
+        final Post post = POST.init(OTHER_USER.init());
+        final User user = USER.init();
+
+        given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
+        given(postRepository.findByIdAndDeletedDateTimeIsNull(post.getId())).willReturn(Optional.of(post));
+        when(postLikeRepository.findByPostAndUser(post, user)).thenReturn(Optional.empty());
+
+        boolean result = postService.likes(post.getId(), user.getUsername());
+
+        assertTrue(result);
+        assertEquals(1, post.getLikes());
+    }
+
+    @Test
+    @DisplayName("좋아요 : 좋아요 취소")
+    void likes_unlikes() {
+        final Post post = POST.init(OTHER_USER.init());
+        final User user = USER.init();
+
+        given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
+        given(postRepository.findByIdAndDeletedDateTimeIsNull(post.getId())).willReturn(Optional.of(post));
+        when(postLikeRepository.findByPostAndUser(post, user)).thenReturn(Optional.of(POST.likes(post, user)));
+
+        boolean result = postService.likes(post.getId(), user.getUsername());
+
+        assertFalse(result);
+        assertEquals(0, post.getLikes());
     }
 }
