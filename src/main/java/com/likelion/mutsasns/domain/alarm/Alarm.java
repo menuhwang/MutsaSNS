@@ -28,7 +28,8 @@ public class Alarm {
     private LocalDateTime createdDateTime;
 
     @Builder
-    public Alarm(AlarmType alarmType, User fromUser, User targetUser) {
+    public Alarm(Long id, AlarmType alarmType, User fromUser, User targetUser) {
+        this.id = id;
         this.alarmType = alarmType;
         this.fromUser = fromUser;
         this.targetUser = targetUser;
