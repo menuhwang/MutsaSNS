@@ -9,14 +9,18 @@ import com.likelion.mutsasns.dto.post.PostRequest;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
+import com.likelion.mutsasns.observer.events.AlarmEvent;
 import com.likelion.mutsasns.repository.PostLikeRepository;
 import com.likelion.mutsasns.repository.PostRepository;
 import com.likelion.mutsasns.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.likelion.mutsasns.domain.alarm.AlarmType.NEW_LIKE_ON_POST;
 
 
 @Service
@@ -25,6 +29,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher publisher;
 
     public Long create(String username, PostRequest postRequest) {
         User user = findUserByUsername(username);
@@ -68,6 +73,8 @@ public class PostService {
         boolean result = postLike.likes();
 
         postLikeRepository.save(postLike);
+
+        if (result) publisher.publishEvent(AlarmEvent.of(NEW_LIKE_ON_POST, post.getUser(), user));
 
         return result;
     }
