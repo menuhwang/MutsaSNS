@@ -9,7 +9,7 @@
 #### 필수과제
 
 - [x] 댓글
-- [ ] 좋아요
+- [x] 좋아요
 - [x] 마이피드
 - [ ] 알림
 - [ ] Swagger에 ApiOperation을 써서 Controller 설명 보이게 할 것
@@ -349,7 +349,7 @@
 ```
 
 #### 특정 게시물 댓글 조회
-`GET /posts/{postId}/comments[?page=0]`
+`GET /api/v1/posts/{postId}/comments[?page=0]`
 
 **Response Body**
 ```json
@@ -372,7 +372,7 @@
 ```
 
 #### 댓글 수정 : Authorize
-`PUT /posts/{postId}/comments/{id}`
+`PUT /api/v1/posts/{postId}/comments/{id}`
 
 **Request Body**
 ```json
@@ -397,7 +397,7 @@
 ```
 
 #### 댓글 삭제 : Authorize
-`DELETE /posts/{postId}/comments/{id}`
+`DELETE /api/v1/posts/{postId}/comments/{id}`
 
 **Response Body**
 ```json
@@ -407,5 +407,29 @@
     "message": "댓글 삭제 완료",
     "id": 0
   }
+}
+```
+<br>
+
+### 좋아요
+
+#### 좋아요 | 좋아요 취소
+`POST /api/v1/posts/{id}/likes`
+
+**Response Body**
+```json
+{
+  "resultCode": "SUCCESS",
+  "result": "좋아요를 눌렀습니다." | "좋아요를 취소했습니다."
+}
+```
+
+#### 좋아요 개수 조회
+`GET /api/v1/posts/{id}/likes`
+
+```json
+{
+  "resultCode":"SUCCESS",
+  "result": 0
 }
 ```
