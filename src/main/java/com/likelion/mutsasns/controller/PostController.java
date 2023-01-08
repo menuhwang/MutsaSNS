@@ -6,6 +6,8 @@ import com.likelion.mutsasns.dto.post.PostDetailResponse;
 import com.likelion.mutsasns.dto.post.PostResultResponse;
 import com.likelion.mutsasns.service.PostService;
 import com.likelion.mutsasns.support.annotation.Login;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,11 +21,13 @@ import java.security.Principal;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
+@Api(tags = "포스트")
+@RequestMapping("/api/v1/posts")
 public class PostController {
     private final PostService postService;
 
+    @ApiOperation(value = "포스트 리스트 조회")
     @GetMapping("")
     public ResultResponse<Page<PostDetailResponse>> findAll(@PageableDefault(size = 20, sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<PostDetailResponse> responses = postService.findAll(pageable);
@@ -31,6 +35,7 @@ public class PostController {
     }
 
     @Login
+    @ApiOperation(value = "포스트 작성")
     @PostMapping("")
     public ResultResponse<PostResultResponse> create(@ApiIgnore Principal principal, @RequestBody PostRequest postRequest) {
         log.info("포스트 작성 title:{}, body:{}", postRequest.getTitle(), postRequest.getBody());
@@ -39,12 +44,14 @@ public class PostController {
     }
 
     @Login
+    @ApiOperation(value = "내가 작성한 포스트 조회")
     @GetMapping("/my")
     public ResultResponse<Page<PostDetailResponse>> findMyPosts(@ApiIgnore Principal principal, @PageableDefault(size = 20, sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
         log.info("마이 피드 조회 user:{}", principal.getName());
         return ResultResponse.success(postService.findByUsername(principal.getName(), pageable));
     }
 
+    @ApiOperation(value = "포스트 상세조회")
     @GetMapping("/{id}")
     public ResultResponse<PostDetailResponse> findById(@PathVariable Long id) {
         log.info("포스트 상세조회 id:{}", id);
@@ -52,6 +59,7 @@ public class PostController {
     }
 
     @Login
+    @ApiOperation(value = "포스트 수정")
     @PutMapping("/{id}")
     public ResultResponse<PostResultResponse> update(@ApiIgnore Principal principal, @PathVariable Long id, @RequestBody PostRequest updateRequest) {
         log.info("포스트 수정 id:{}, title:{}, body:{}", id, updateRequest.getTitle(), updateRequest.getBody());
@@ -60,6 +68,7 @@ public class PostController {
     }
 
     @Login
+    @ApiOperation(value = "포스트 삭제")
     @DeleteMapping("/{id}")
     public ResultResponse<PostResultResponse> deleteById(@ApiIgnore Principal principal, @PathVariable Long id) {
         log.info("포스트 삭제 id:{}", id);
@@ -68,6 +77,7 @@ public class PostController {
     }
 
     @Login
+    @ApiOperation(value = "포스트 좋아요 | 취소")
     @PostMapping("/{id}/likes")
     public ResultResponse<String> likes(@ApiIgnore Principal principal, @PathVariable Long id) {
         log.info("포스트 좋아요 id:{}", id);
@@ -75,6 +85,7 @@ public class PostController {
         return ResultResponse.success(result ? "좋아요를 눌렀습니다." : "좋아요를 취소했습니다.");
     }
 
+    @ApiOperation(value = "포스트 좋아요 개수 조회")
     @GetMapping("/{id}/likes")
     public ResultResponse<Integer> getLikes(@PathVariable Long id) {
         log.info("포스트 좋아요 개수 조회 id:{}", id);
