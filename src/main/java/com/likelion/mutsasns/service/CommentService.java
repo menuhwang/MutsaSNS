@@ -11,14 +11,18 @@ import com.likelion.mutsasns.exception.notfound.CommentNotFoundException;
 import com.likelion.mutsasns.exception.notfound.PostNotFoundException;
 import com.likelion.mutsasns.exception.notfound.UserNotFoundException;
 import com.likelion.mutsasns.exception.unauthorized.InvalidPermissionException;
+import com.likelion.mutsasns.observer.events.AlarmEvent;
 import com.likelion.mutsasns.repository.CommentRepository;
 import com.likelion.mutsasns.repository.PostRepository;
 import com.likelion.mutsasns.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.likelion.mutsasns.domain.alarm.AlarmType.NEW_COMMENT_ON_POST;
 
 @Service
 @RequiredArgsConstructor
@@ -26,11 +30,13 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final ApplicationEventPublisher publisher;
 
     public CommentDetailResponse create(Long postId, String username, CommentRequest commentRequest) {
         User user = findUserByUsername(username);
         Post post = findPostById(postId);
         Comment comment = commentRepository.save(commentRequest.toEntity(post, user));
+        publisher.publishEvent(AlarmEvent.of(NEW_COMMENT_ON_POST, post.getUser(), user));
         return CommentDetailResponse.of(comment);
     }
 

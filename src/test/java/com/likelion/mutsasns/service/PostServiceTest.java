@@ -14,6 +14,7 @@ import com.likelion.mutsasns.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.Optional;
@@ -32,7 +33,8 @@ class PostServiceTest {
     private final PostRepository postRepository = Mockito.mock(PostRepository.class);
     private final UserRepository userRepository = Mockito.mock(UserRepository.class);
     private final PostLikeRepository postLikeRepository = Mockito.mock(PostLikeRepository.class);
-    private final PostService postService = new PostService(postRepository, postLikeRepository, userRepository);
+    private final ApplicationEventPublisher publisher = Mockito.mock(ApplicationEventPublisher.class);
+    private final PostService postService = new PostService(postRepository, postLikeRepository, userRepository, publisher);
 
     @Test
     @DisplayName("작성 : 정상")

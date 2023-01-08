@@ -19,6 +19,7 @@ public class WebSecurityConfig {
     private final JwtProvider jwtProvider;
     public static final String[] GET_AUTHENTICATED_REGEX_LIST = {
             "^/api/v1/posts/my$",
+            "^/api/v1/alarms$"
     };
 
     public static final String[] POST_AUTHENTICATED_REGEX_LIST = {
