@@ -26,7 +26,10 @@ public class SwaggerConfig {
     public Docket api() {
         return new Docket(DocumentationType.OAS_30)
                 .apiInfo(apiInfo())
-                .securitySchemes(Arrays.asList(HttpAuthenticationScheme.JWT_BEARER_BUILDER.name("JWT").build()))
+                .securitySchemes(Arrays.asList(HttpAuthenticationScheme.JWT_BEARER_BUILDER
+                        .name("JWT")
+                        .description("Bearer를 제외한 토큰(JWT)만 입력해주세요.")
+                        .build()))
                 .securityContexts(Arrays.asList(securityContext()))
                 .alternateTypeRules(alternateTypeRules())
                 .select()
