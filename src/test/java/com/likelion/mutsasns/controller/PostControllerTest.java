@@ -72,14 +72,14 @@ class PostControllerTest {
 
     @Test
     @DisplayName("작성 : 실패 - 로그인하지 않은 경우")
-    void create_no_token_header() throws Exception {
+    void create_user_not_logged_in() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(POST.createRequest())))
-                .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
+                .andExpect(status().is(USER_NOT_LOGGED_IN.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
-                .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
-                .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
+                .andExpect(jsonPath("$.result.errorCode").value(USER_NOT_LOGGED_IN.name()))
+                .andExpect(jsonPath("$.result.message").value(USER_NOT_LOGGED_IN.getMessage()));
 
         verify(postService, never()).create(anyString(), any(PostRequest.class));
     }
@@ -173,14 +173,14 @@ class PostControllerTest {
 
     @Test
     @DisplayName("수정 : 실패 - 로그인하지 않은 경우")
-    void update_no_token_header() throws Exception {
+    void update_user_not_logged_in() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/posts/" + 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(POST.updateRequest())))
-                .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
+                .andExpect(status().is(USER_NOT_LOGGED_IN.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
-                .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
-                .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
+                .andExpect(jsonPath("$.result.errorCode").value(USER_NOT_LOGGED_IN.name()))
+                .andExpect(jsonPath("$.result.message").value(USER_NOT_LOGGED_IN.getMessage()));
 
         verify(postService, never()).update(anyString(), anyLong(), any(PostRequest.class));
     }
@@ -249,12 +249,12 @@ class PostControllerTest {
 
     @Test
     @DisplayName("삭제 : 실패 - 로그인하지 않은 경우")
-    void deleteById_no_token_header() throws Exception {
+    void deleteById_user_not_logged_in() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/posts/" + 1))
-                .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
+                .andExpect(status().is(USER_NOT_LOGGED_IN.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
-                .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
-                .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
+                .andExpect(jsonPath("$.result.errorCode").value(USER_NOT_LOGGED_IN.name()))
+                .andExpect(jsonPath("$.result.message").value(USER_NOT_LOGGED_IN.getMessage()));
 
         verify(postService, never()).deleteById(anyString(), anyLong());
     }
@@ -324,12 +324,12 @@ class PostControllerTest {
 
     @Test
     @DisplayName("마이피드 : 실패 - 로그인하지 않은 경우")
-    void findMyPosts_no_token_header() throws Exception {
+    void findMyPosts_user_not_logged_in() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/posts/my"))
-                .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
+                .andExpect(status().is(USER_NOT_LOGGED_IN.getHttpStatus().value()))
                 .andExpect(jsonPath("$.resultCode").value(ERROR))
-                .andExpect(jsonPath("$.result.errorCode").value(INVALID_TOKEN.name()))
-                .andExpect(jsonPath("$.result.message").value(INVALID_TOKEN.getMessage()));
+                .andExpect(jsonPath("$.result.errorCode").value(USER_NOT_LOGGED_IN.name()))
+                .andExpect(jsonPath("$.result.message").value(USER_NOT_LOGGED_IN.getMessage()));
 
         verify(postService, never()).deleteById(anyString(), anyLong());
     }

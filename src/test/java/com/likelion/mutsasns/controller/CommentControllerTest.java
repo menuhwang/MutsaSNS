@@ -95,11 +95,26 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("작성 : 실패 - 로그인하지 않은 경우, 잘못된 토큰")
+    @DisplayName("작성 : 실패 - 로그인하지 않은 경우")
+    void create_user_not_logged_in() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts/" + 1 + "/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(COMMENT.createRequest())))
+                .andExpect(status().is(USER_NOT_LOGGED_IN.getHttpStatus().value()))
+                .andExpect(jsonPath("$.resultCode").value(ERROR))
+                .andExpect(jsonPath("$.result.errorCode").value(USER_NOT_LOGGED_IN.name()))
+                .andExpect(jsonPath("$.result.message").value(USER_NOT_LOGGED_IN.getMessage()));
+
+        verify(commentService, never()).create(anyLong(), anyString(), any(CommentRequest.class));
+    }
+
+    @Test
+    @DisplayName("작성 : 실패 - 잘못된 토큰")
     void create_invalid_token() throws Exception {
         given(jwtProvider.validateToken(MOCK_TOKEN)).willReturn(false);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts/" + 1 + "/comments")
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(COMMENT.createRequest())))
                 .andExpect(status().is(INVALID_TOKEN.getHttpStatus().value()))
