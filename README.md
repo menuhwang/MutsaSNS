@@ -11,7 +11,7 @@
 - [x] 댓글
 - [x] 좋아요
 - [x] 마이피드
-- [ ] 알림
+- [x] 알림
 - [ ] Swagger에 ApiOperation을 써서 Controller 설명 보이게 할 것
 
 #### 도전과제
@@ -31,10 +31,14 @@
     1. 우선 순위에 따라 설정.
     2. 패턴을 더 세분화해 설정. **[채택]**
   - antMatchers -> regexMatchers 정규식 활용.
+- 알람 기능
+  - 알람 이벤트가 발생하면 이벤트 핸들러가 처리하도록 하여
+  - 댓글 작성, 좋아요 시 알람 생성이라는 관심사를 분리할 수 있었고
+  - 클라이언트는 댓글 작성, 좋아요 로직이 끝나고 불필요하게 알람 생성 로직까지 응답을 기다릴 필요가 없어짐.
 
 **[아쉬운 점]**
-
-**[궁금한 점]**
+- JPA N+1 문제 해결
+  - Page과 Join Fetch를 함께 사용하면 OOM(Out Of Memory)가 발생할 수 있음.
 
 ### 1주차 미션 요약
 
@@ -431,5 +435,39 @@
 {
   "resultCode":"SUCCESS",
   "result": 0
+}
+```
+
+<br>
+
+### 알람
+
+#### 알람 조회
+`GET /api/v1/alarms`
+
+**Response Body**
+```json
+{
+  "resultCode": "SUCCESS",
+  "result": {
+    "content": [
+      {
+        "id": 0,
+        "fromUser": "String",
+        "message": "새로운 댓글" | "좋아요",
+        "createdAt": "yyyy-mm-dd hh:mm:ss"
+      }
+    ],
+    "pageable": Pageable,
+    "last": boolean,
+    "totalElements": 0,
+    "totalPages": 0,
+    "size": 0,
+    "number": 0,
+    "first": boolean,
+    "sort": Sort,
+    "numberOfElements": 0,
+    "empty": boolean
+  }
 }
 ```
