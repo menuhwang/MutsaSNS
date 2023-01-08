@@ -12,7 +12,7 @@
 - [x] 좋아요
 - [x] 마이피드
 - [x] 알림
-- [ ] Swagger에 ApiOperation을 써서 Controller 설명 보이게 할 것
+- [x] Swagger에 ApiOperation을 써서 Controller 설명 보이게 할 것
 
 #### 도전과제
 
