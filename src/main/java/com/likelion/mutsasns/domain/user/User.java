@@ -1,17 +1,14 @@
 package com.likelion.mutsasns.domain.user;
 
+import com.likelion.mutsasns.domain.BaseEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,8 +16,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-public class User implements UserDetails {
+public class User extends BaseEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -37,16 +33,6 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     private boolean enabled = true;
-
-    @CreatedDate
-    @Column(nullable = false)
-    private LocalDateTime createdDateTime;
-
-    @LastModifiedDate
-    @Column(nullable = false)
-    private LocalDateTime updatedDateTime;
-
-    private LocalDateTime deletedDateTime;
 
     @Builder
     public User(Long id, String username, String password, Role role) {

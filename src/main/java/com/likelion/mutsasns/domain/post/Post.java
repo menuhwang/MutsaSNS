@@ -1,21 +1,18 @@
 package com.likelion.mutsasns.domain.post;
 
+import com.likelion.mutsasns.domain.BaseEntity;
 import com.likelion.mutsasns.domain.user.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 @Getter
-public class Post {
+public class Post extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,15 +27,6 @@ public class Post {
 
     @ManyToOne(optional = false)
     private User user;
-
-    @CreatedDate
-    @Column(nullable = false)
-    private LocalDateTime createdDateTime;
-
-    @LastModifiedDate
-    @Column(nullable = false)
-    private LocalDateTime lastModifiedDateTime;
-    private LocalDateTime deletedDateTime;
 
     @Builder
     public Post(Long id, String title, String body, User user) {
