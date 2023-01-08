@@ -25,6 +25,7 @@ public class Alarm {
     @ManyToOne
     private User targetUser;
     @CreatedDate
+    @Column(nullable = false)
     private LocalDateTime createdDateTime;
 
     @Builder
