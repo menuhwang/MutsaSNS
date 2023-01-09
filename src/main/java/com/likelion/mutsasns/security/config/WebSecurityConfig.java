@@ -25,7 +25,8 @@ public class WebSecurityConfig {
     public static final String[] POST_AUTHENTICATED_REGEX_LIST = {
             "^/api/v1/posts$",
             "^/api/v1/posts/\\d/comments$",
-            "^/api/v1/posts/\\d/likes$"
+            "^/api/v1/posts/\\d/likes$",
+            "^/api/v1/users/me$"
     };
 
     public static final String[] PUT_AUTHENTICATED_REGEX_LIST = {
