@@ -25,7 +25,8 @@ public class UserService implements UserDetailsService {
 
     public LoginResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByUsername(loginRequest.getUserName()).orElseThrow(UserNotFoundException::new);
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) throw new InvalidPasswordException();
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()))
+            throw new InvalidPasswordException();
         return new LoginResponse(jwtProvider.generateToken(user));
     }
 
@@ -46,6 +47,11 @@ public class UserService implements UserDetailsService {
         if (id.equals(admin.getId())) throw new UpdateUserRoleException();
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
         user.updateRole(Role.of(updateUserRoleRequest.getRole().toUpperCase()));
+        return UserDetailResponse.of(user);
+    }
+
+    public UserDetailResponse findByUsername(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         return UserDetailResponse.of(user);
     }
 }

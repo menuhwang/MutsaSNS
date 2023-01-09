@@ -45,4 +45,12 @@ public class UserController {
         UserDetailResponse response = userService.updateRole(principal.getName(), id, updateUserRoleRequest);
         return ResultResponse.success(response);
     }
+
+    @Login
+    @ApiOperation(value = "로그인 정보 확인")
+    @PostMapping("/me")
+    public ResultResponse<UserDetailResponse> verify(@ApiIgnore Principal principal) {
+        log.info("로그인 정보 확인 user:{}", principal.getName());
+        return ResultResponse.success(userService.findByUsername(principal.getName()));
+    }
 }
