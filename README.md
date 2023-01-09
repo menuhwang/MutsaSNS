@@ -112,13 +112,13 @@
 
 ## URL
 ### FE
-> ~~http://ec2-43-200-183-93.ap-northeast-2.compute.amazonaws.com~~
+> http://www.hmin.site
 
 ### BE
-> http://api.hmin.site:8080
+> http://api.hmin.site
 
 ### Swagger
-> http://api.hmin.site:8080/swagger-ui/index.html
+> http://api.hmin.site/swagger-ui/index.html
 
 ### 데모 로그인
 
